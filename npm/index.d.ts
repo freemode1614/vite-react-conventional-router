@@ -1,4 +1,5 @@
-declare const a = "a";
-declare const b = "b";
+import { Plugin } from 'vite';
 
-export { a, b };
+declare function ConventionalRouter(): Plugin;
+
+export { ConventionalRouter as default };
