@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/index.ts"],"names":[],"mappings":";AAAO,IAAM,CAAI,GAAA,IAAA;AACV,IAAM,CAAI,GAAA","file":"index.js","sourcesContent":["export const a = \"a\";\nexport const b = \"b\";\n"]}

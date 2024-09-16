@@ -1,0 +1,37 @@
+{
+  "name": "ts-starter",
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development tsup --watch",
+    "build": "cross-env NODE_ENV=production tsup"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "exports": {
+    "./package.json": "./package.json",
+    "./*": {
+      "types": "./npm/*.d.ts",
+      "import": "./npm/*.js",
+      "require": "./npm/*.cjs"
+    },
+    ".": {
+      "types": "./npm/index.d.ts",
+      "import": "./npm/index.js",
+      "require": "./npm/index.cjs"
+    }
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.8",
+    "@moccona/eslint-config": "^0.2.16",
+    "@moccona/prettierrc": "^0.0.2",
+    "@types/node": "^20.16.5",
+    "cross-env": "^7.0.3",
+    "tsup": "^8.2.4",
+    "typescript": "^5.6.2"
+  },
+  "prettier": "@moccona/prettierrc",
+  "packageManager": "pnpm@9.7.1"
+}
