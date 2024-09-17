@@ -1,8 +1,12 @@
 {
-  "name": "ts-starter",
+  "name": "@moccona/vite-react-conventional-router",
   "version": "0.0.0",
-  "description": "",
+  "description": "Vite plugin for react conventional router",
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsup --watch",
     "build": "cross-env NODE_ENV=production tsup",
