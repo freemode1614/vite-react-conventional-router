@@ -1,13 +1,43 @@
 'use strict';
 
+var nodepath = require('path');
 var fg = require('fast-glob');
+require('react');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
+var nodepath__default = /*#__PURE__*/_interopDefault(nodepath);
 var fg__default = /*#__PURE__*/_interopDefault(fg);
 
 // src/index.ts
-var PLUGIN_NAME = "react-conventional-router";
+var PLUGIN_NAME = "vite-plugin-conventional-router";
+var mainPageFile = "index.tsx";
+var filePathToRoutePath = (filepath) => {
+  return filepath.endsWith(mainPageFile) ? filepath.replace(mainPageFile, "") : filepath.replace(filepath, nodepath__default.default.extname(filepath));
+};
+async function collectRoutePages(pages) {
+  const pageModules = [];
+  let routes = [];
+  for (const pattern of pages) {
+    let files = fg__default.default.sync(pattern, { deep: Infinity }).map((file) => file.split("/"));
+    for (const file of files) {
+      pageModules.push(nodepath__default.default.resolve(file.join("/")));
+    }
+    while (true) {
+      const group = files.map((file) => file[0]);
+      if (new Set(group).size > 1) {
+        break;
+      } else {
+        files = files.map((file) => file.slice(1));
+      }
+    }
+    const files_ = files.map((file) => file.join("/")).flat();
+    routes = [...routes, ...files_];
+  }
+  console.log(routes.map((s) => filePathToRoutePath(s)));
+  console.log(pageModules);
+  return routes;
+}
 function ConventionalRouter(options) {
   if (!options) {
     options = { pages: [] };
@@ -16,14 +46,10 @@ function ConventionalRouter(options) {
   if (!Array.isArray(pages)) {
     pages = [pages];
   }
-  const folders = fg__default.default.sync(pages, { deep: Infinity, markDirectories: true }).sort((a, b) => b.localeCompare(a, "en"));
-  console.log("folders", folders);
   return {
     name: PLUGIN_NAME,
-    buildStart: {
-      order: "pre",
-      handler() {
-      }
+    async buildStart() {
+      await collectRoutePages(pages);
     },
     load() {
     }

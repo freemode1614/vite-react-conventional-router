@@ -1,1 +1,1 @@
-export { default } from "@moccona/eslint-config/flat";
+export { config as default } from "@moccona/eslint-config/flat";

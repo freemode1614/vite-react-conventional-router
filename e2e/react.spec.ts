@@ -1,7 +1,7 @@
 import nodePath from "node:path";
 
-import { type Browser, chromium, expect, test } from "@playwright/test";
-import { createServer, type ViteDevServer } from "vite";
+import { Browser, chromium, expect, test } from "@playwright/test";
+import { createServer, ViteDevServer } from "vite";
 
 let devServer: ViteDevServer;
 let browser: Browser;
