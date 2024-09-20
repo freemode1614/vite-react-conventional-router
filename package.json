@@ -17,10 +17,8 @@
   "license": "MIT",
   "exports": {
     "./package.json": "./package.json",
-    "./*": {
-      "types": "./npm/*.d.ts",
-      "import": "./npm/*.js",
-      "require": "./npm/*.cjs"
+    "./client": {
+      "types": "./npm/client.d.ts"
     },
     ".": {
       "types": "./npm/index.d.ts",

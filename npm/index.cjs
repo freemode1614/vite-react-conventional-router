@@ -2,7 +2,6 @@
 
 var nodepath = require('path');
 var fg = require('fast-glob');
-require('react');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
@@ -11,11 +10,12 @@ var fg__default = /*#__PURE__*/_interopDefault(fg);
 
 // src/index.ts
 var PLUGIN_NAME = "vite-plugin-conventional-router";
-var mainPageFile = "index.tsx";
+var PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
+var PLUGIN_MAIN_PAGE_FILE = "index.tsx";
 var filePathToRoutePath = (filepath) => {
-  return filepath.endsWith(mainPageFile) ? filepath.replace(mainPageFile, "") : filepath.replace(filepath, nodepath__default.default.extname(filepath));
+  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? filepath.replace(PLUGIN_MAIN_PAGE_FILE, "").replace(/^\//, "").replace(/\/$/, "") : filepath.replace(filepath, nodepath__default.default.extname(filepath)).replace(/^\//, "").replace(/\/$/, "");
 };
-async function collectRoutePages(pages) {
+function collectRoutePages(pages) {
   const pageModules = [];
   let routes = [];
   for (const pattern of pages) {
@@ -34,9 +34,12 @@ async function collectRoutePages(pages) {
     const files_ = files.map((file) => file.join("/")).flat();
     routes = [...routes, ...files_];
   }
-  console.log(routes.map((s) => filePathToRoutePath(s)));
-  console.log(pageModules);
-  return routes;
+  return routes.map((s) => filePathToRoutePath(s)).map((route, index) => {
+    return {
+      path: route,
+      element: pageModules[index]
+    };
+  });
 }
 function ConventionalRouter(options) {
   if (!options) {
@@ -48,10 +51,30 @@ function ConventionalRouter(options) {
   }
   return {
     name: PLUGIN_NAME,
-    async buildStart() {
-      await collectRoutePages(pages);
+    resolveId(source) {
+      if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
+        return source;
+      }
+      return null;
     },
-    load() {
+    async load(id) {
+      if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
+        const routes = collectRoutePages(pages);
+        console.count("generate routes");
+        return {
+          code: `
+          ${routes.map((route, index) => `import * as Page$${index} from "${route.element}"`).join("\n")}
+
+          export default [${routes.map(
+            (route, index) => `{
+              path: "${route.path}",
+              Component: Page$${index}.default,
+              shouldValidate: !!Page$${index}.shouldValidate
+            },`
+          )}]`
+        };
+      }
+      return null;
     }
   };
 }

@@ -1,7 +1,8 @@
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-// import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import routes from "virtual:routes"
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 function App() {
   return (
@@ -16,7 +17,11 @@ function App() {
       </div>
       <h1 role='main'>Vite + React</h1>
       <div className="pages">
-        {/* <RouterProvider router={createBrowserRouter([])} /> */}
+        <RouterProvider router={createBrowserRouter(routes)} fallbackElement={
+          <div>
+              Loading
+          </div>
+        } />
       </div>
     </>
   )

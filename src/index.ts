@@ -1,51 +1,34 @@
 import nodepath from "node:path";
 
 import fg, { Pattern } from "fast-glob";
-import { createElement, type FC } from "react";
-import type { NonIndexRouteObject } from "react-router";
+import type { RouteObject } from "react-router";
 import type { Plugin } from "vite";
 
 // const req = Module.createRequire(process.cwd());
 
 const PLUGIN_NAME = "vite-plugin-conventional-router";
+const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
+const PLUGIN_MAIN_PAGE_FILE = "index.tsx";
 
-const mainPageFile = "index.tsx";
-
-type PageModule = Partial<
-  Pick<
-    NonIndexRouteObject,
-    "action" | "errorElement" | "caseSensitive" | "loader" | "shouldRevalidate" | "id" | "handle"
-  > & { default: FC }
->;
+// type PageModule = Partial<
+//   Pick<
+//     NonIndexRouteObject,
+//     "action" | "errorElement" | "caseSensitive" | "loader" | "shouldRevalidate" | "id" | "handle"
+//   > & { default: FC }
+// >;
 
 type ConventionalRouterProps = {
   pages: Pattern | Pattern[];
 };
 
-const errorElement = () => {
-  return createElement("div", {}, [createElement("span", {}, ["Shit happens!"])]);
-};
-
 const filePathToRoutePath = (filepath: string) => {
-  return filepath.endsWith(mainPageFile)
-    ? filepath.replace(mainPageFile, "")
-    : filepath.replace(filepath, nodepath.extname(filepath));
+  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
+    ? filepath.replace(PLUGIN_MAIN_PAGE_FILE, "").replace(/^\//, "").replace(/\/$/, "")
+    : filepath.replace(filepath, nodepath.extname(filepath)).replace(/^\//, "").replace(/\/$/, "");
 };
 
-// async function pageModuleImporter(file: string): Promise<PageModule> {
-//   try {
-//     const pageModule = (await import(file)) as PageModule;
-//     return pageModule;
-//   } catch (error) {
-//     console.log(error);
-//     return {
-//       errorElement: errorElement(),
-//     };
-//   }
-// }
-
-async function collectRoutePages(pages: Pattern[]): Promise<string[]> {
-  const pageModules = [];
+function collectRoutePages(pages: Pattern[]): RouteObject[] {
+  const pageModules: string[] = [];
   let routes: string[] = [];
 
   for (const pattern of pages) {
@@ -68,10 +51,14 @@ async function collectRoutePages(pages: Pattern[]): Promise<string[]> {
     routes = [...routes, ...files_];
   }
 
-  console.log(routes.map((s) => filePathToRoutePath(s)));
-  console.log(pageModules);
-
-  return routes;
+  return routes
+    .map((s) => filePathToRoutePath(s))
+    .map((route, index) => {
+      return {
+        path: route,
+        element: pageModules[index],
+      };
+    });
 }
 
 export default function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin {
@@ -87,11 +74,31 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
 
   return {
     name: PLUGIN_NAME,
-    async buildStart() {
-      await collectRoutePages(pages);
+    resolveId(source) {
+      if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
+        return source;
+      }
+
+      return null;
     },
-    load() {
-      // console.log(id);
+    async load(id) {
+      if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
+        const routes = collectRoutePages(pages);
+        console.count("generate routes");
+        return {
+          code: `
+          ${routes.map((route, index) => `import * as Page$${index} from "${route.element}"`).join("\n")}
+
+          export default [${routes.map(
+            (route, index) => `{
+              path: "${route.path}",
+              Component: Page$${index}.default,
+              shouldValidate: !!Page$${index}.shouldValidate
+            },`,
+          )}]`,
+        };
+      }
+      return null;
     },
   };
 }
