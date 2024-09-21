@@ -50,13 +50,13 @@ var isSubPath = (parentPath, subPath) => {
   }
   return false;
 };
-var arrangeRoutes = (routes, parent) => {
+var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent) => {
   const subs = routes.filter((route) => isSubPath(parent.path, route.path));
-  return {
-    ...parent,
+  subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
+  return Object.assign(parent, {
     path: "/" + parent.path,
-    children: subs.map((sub) => arrangeRoutes(routes, sub))
-  };
+    children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent))
+  });
 };
 var stringifyRoutes = (routes) => {
   return `[
@@ -90,10 +90,18 @@ function ConventionalRouter(options) {
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const routes = collectRoutePages(pages);
-        const r = routes.filter((r2) => r2.path.split("/").length === 1).map((route) => arrangeRoutes(routes, route));
+        const subRoutesPathAppendToParent = [];
+        routes.filter((r) => r.path.split("/").length === 1).map((route) => arrangeRoutes(routes, route, subRoutesPathAppendToParent));
+        const finalRoutes = routes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(
+          (r) => r.path.startsWith("/") ? r : {
+            ...r,
+            path: "/" + r.path
+          }
+        );
+        console.log(finalRoutes);
         return {
           code: `
-          const routes = ${stringifyRoutes(r)};
+          const routes = ${stringifyRoutes(finalRoutes)};
           console.log(routes);
           export default routes;`
         };

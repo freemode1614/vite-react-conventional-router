@@ -68,13 +68,17 @@ const isSubPath = (parentPath: string, subPath: string) => {
   return false;
 };
 
-const arrangeRoutes = (routes: NonIndexRouteObject[], parent: NonIndexRouteObject): NonIndexRouteObject => {
+const arrangeRoutes = (
+  routes: NonIndexRouteObject[],
+  parent: NonIndexRouteObject,
+  subRoutesPathAppendToParent: string[],
+): NonIndexRouteObject => {
   const subs = routes.filter((route) => isSubPath(parent.path!, route.path!));
-  return {
-    ...parent,
+  subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path!));
+  return Object.assign(parent, {
     path: "/" + parent.path!,
-    children: subs.map((sub) => arrangeRoutes(routes, sub)),
-  };
+    children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent)),
+  });
 };
 
 const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
@@ -114,10 +118,26 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const routes = collectRoutePages(pages);
-        const r = routes.filter((r) => r.path!.split("/").length === 1).map((route) => arrangeRoutes(routes, route));
+        const subRoutesPathAppendToParent: string[] = [];
+        routes
+          .filter((r) => r.path!.split("/").length === 1)
+          .map((route) => arrangeRoutes(routes, route, subRoutesPathAppendToParent));
+
+        const finalRoutes = routes
+          .filter((r) => !subRoutesPathAppendToParent.includes(r.path!))
+          .map((r) =>
+            r.path!.startsWith("/")
+              ? r
+              : {
+                  ...r,
+                  path: "/" + r.path,
+                },
+          );
+        console.log(finalRoutes);
+
         return {
           code: `
-          const routes = ${stringifyRoutes(r)};
+          const routes = ${stringifyRoutes(finalRoutes)};
           console.log(routes);
           export default routes;`,
         };
