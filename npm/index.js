@@ -5,8 +5,11 @@ import fg from 'fast-glob';
 var PLUGIN_NAME = "vite-plugin-conventional-router";
 var PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 var PLUGIN_MAIN_PAGE_FILE = "index.tsx";
+var stripSlash = (filepath) => {
+  return filepath.replace(/^\//, "").replace(/\/$/, "");
+};
 var filePathToRoutePath = (filepath) => {
-  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? filepath.replace(PLUGIN_MAIN_PAGE_FILE, "").replace(/^\//, "").replace(/\/$/, "") : filepath.replace(filepath, nodepath.extname(filepath)).replace(/^\//, "").replace(/\/$/, "");
+  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(filepath, nodepath.extname(filepath)));
 };
 function collectRoutePages(pages) {
   const pageModules = [];
@@ -34,6 +37,33 @@ function collectRoutePages(pages) {
     };
   });
 }
+var isSubPath = (parentPath, subPath) => {
+  if (parentPath !== "" && subPath.startsWith(parentPath) && subPath.split("/").length - parentPath.split("/").length === 1) {
+    return true;
+  }
+  return false;
+};
+var arrangeRoutes = (routes, parent) => {
+  const subs = routes.filter((route) => isSubPath(parent.path, route.path));
+  return {
+    ...parent,
+    path: "/" + parent.path,
+    children: subs.map((sub) => arrangeRoutes(routes, sub))
+  };
+};
+var stringifyRoutes = (routes) => {
+  return `[
+    ${routes.map(
+    (route, index) => `{
+        path: "${route.path}",
+        lazy: () => import("${route.element}"),
+        children: ${!route.children ? "[]" : stringifyRoutes(route.children)}
+        // Component: Page$${index}.default,
+        // shouldValidate: !!Page$${index}.shouldValidate
+      },`
+  )}
+  ]`;
+};
 function ConventionalRouter(options) {
   if (!options) {
     options = { pages: [] };
@@ -53,18 +83,12 @@ function ConventionalRouter(options) {
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const routes = collectRoutePages(pages);
-        console.count("generate routes");
+        const r = routes.filter((r2) => r2.path.split("/").length === 1).map((route) => arrangeRoutes(routes, route));
         return {
           code: `
-          ${routes.map((route, index) => `import * as Page$${index} from "${route.element}"`).join("\n")}
-
-          export default [${routes.map(
-            (route, index) => `{
-              path: "${route.path}",
-              Component: Page$${index}.default,
-              shouldValidate: !!Page$${index}.shouldValidate
-            },`
-          )}]`
+          const routes = ${stringifyRoutes(r)};
+          console.log(routes);
+          export default routes;`
         };
       }
       return null;

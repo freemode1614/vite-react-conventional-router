@@ -2,11 +2,17 @@ import { useNavigate } from "react-router";
 
 export const shouldValidate = false;
 
-export default function HomdeIndex() {
+Component.displayName = 'index';
+
+export function Component() {
     const nav = useNavigate();
-    return <div role="headling"> index.tsx
+    return <div> 
+    <span role="heading">index.tsx</span>
         <button onClick={
-            () => nav('home')
-        }>Home</button>
+            () => nav('page1')
+        }>page1</button>
+        <button onClick={
+            () => nav('page2')
+        }>page2</button>
      </div>
 }

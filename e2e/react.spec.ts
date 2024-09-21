@@ -23,4 +23,10 @@ test.afterAll(async () => {
 test("should render page with no error", async ({ page }) => {
   await page.goto(`http://localhost:${devServer.config.server.port}`);
   await expect(page.getByRole("main")).toHaveText("Vite + React");
+  await expect(page.getByRole("heading")).toHaveText("home");
+});
+
+test("should render page home", async ({ page }) => {
+  await page.goto(`http://localhost:${devServer.config.server.port}/home`);
+  await expect(page.getByRole("heading")).toHaveText(" home/index.tsx ");
 });

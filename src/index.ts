@@ -1,33 +1,28 @@
 import nodepath from "node:path";
 
 import fg, { Pattern } from "fast-glob";
-import type { RouteObject } from "react-router";
+import type { NonIndexRouteObject } from "react-router";
 import type { Plugin } from "vite";
-
-// const req = Module.createRequire(process.cwd());
 
 const PLUGIN_NAME = "vite-plugin-conventional-router";
 const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 const PLUGIN_MAIN_PAGE_FILE = "index.tsx";
 
-// type PageModule = Partial<
-//   Pick<
-//     NonIndexRouteObject,
-//     "action" | "errorElement" | "caseSensitive" | "loader" | "shouldRevalidate" | "id" | "handle"
-//   > & { default: FC }
-// >;
-
 type ConventionalRouterProps = {
   pages: Pattern | Pattern[];
 };
 
-const filePathToRoutePath = (filepath: string) => {
-  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
-    ? filepath.replace(PLUGIN_MAIN_PAGE_FILE, "").replace(/^\//, "").replace(/\/$/, "")
-    : filepath.replace(filepath, nodepath.extname(filepath)).replace(/^\//, "").replace(/\/$/, "");
+const stripSlash = (filepath: string) => {
+  return filepath.replace(/^\//, "").replace(/\/$/, "");
 };
 
-function collectRoutePages(pages: Pattern[]): RouteObject[] {
+const filePathToRoutePath = (filepath: string) => {
+  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
+    ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
+    : stripSlash(filepath.replace(filepath, nodepath.extname(filepath)));
+};
+
+function collectRoutePages(pages: Pattern[]): NonIndexRouteObject[] {
   const pageModules: string[] = [];
   let routes: string[] = [];
 
@@ -61,6 +56,41 @@ function collectRoutePages(pages: Pattern[]): RouteObject[] {
     });
 }
 
+const isSubPath = (parentPath: string, subPath: string) => {
+  if (
+    parentPath !== "" &&
+    subPath.startsWith(parentPath) &&
+    subPath.split("/").length - parentPath.split("/").length === 1
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+const arrangeRoutes = (routes: NonIndexRouteObject[], parent: NonIndexRouteObject): NonIndexRouteObject => {
+  const subs = routes.filter((route) => isSubPath(parent.path!, route.path!));
+  return {
+    ...parent,
+    path: "/" + parent.path!,
+    children: subs.map((sub) => arrangeRoutes(routes, sub)),
+  };
+};
+
+const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
+  return `[
+    ${routes.map(
+      (route, index) => `{
+        path: "${route.path}",
+        lazy: () => import("${route.element}"),
+        children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[])}
+        // Component: Page$${index}.default,
+        // shouldValidate: !!Page$${index}.shouldValidate
+      },`,
+    )}
+  ]`;
+};
+
 export default function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin {
   if (!options) {
     options = { pages: [] };
@@ -84,18 +114,12 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const routes = collectRoutePages(pages);
-        console.count("generate routes");
+        const r = routes.filter((r) => r.path!.split("/").length === 1).map((route) => arrangeRoutes(routes, route));
         return {
           code: `
-          ${routes.map((route, index) => `import * as Page$${index} from "${route.element}"`).join("\n")}
-
-          export default [${routes.map(
-            (route, index) => `{
-              path: "${route.path}",
-              Component: Page$${index}.default,
-              shouldValidate: !!Page$${index}.shouldValidate
-            },`,
-          )}]`,
+          const routes = ${stringifyRoutes(r)};
+          console.log(routes);
+          export default routes;`,
         };
       }
       return null;
