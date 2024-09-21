@@ -36,10 +36,6 @@ const filePathToRoutePath = (filepath: string) => {
       }
 
       return seg;
-      // ? seg.replace("@", ":")
-      // : seg.startsWith("$")
-      //   ? seg.replace(/^\$(.+)/, `:${RegExp.$1}?`)
-      //   : seg;
     })
     .join("/");
 };
