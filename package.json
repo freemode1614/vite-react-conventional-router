@@ -27,6 +27,7 @@
     }
   },
   "dependencies": {
+    "debug": "^4.3.7",
     "fast-glob": "^3.3.2",
     "glob-to-regexp": "^0.4.1"
   },
@@ -35,6 +36,7 @@
     "@moccona/eslint-config": "^0.3.5",
     "@moccona/prettierrc": "^0.0.3",
     "@playwright/test": "^1.47.1",
+    "@types/debug": "^4.1.12",
     "@types/glob-to-regexp": "^0.4.4",
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.3",

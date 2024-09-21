@@ -1,5 +1,6 @@
 import nodepath from "node:path";
 
+import log from "debug";
 import fg, { Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
 import type { Plugin } from "vite";
@@ -7,6 +8,8 @@ import type { Plugin } from "vite";
 const PLUGIN_NAME = "vite-plugin-conventional-router";
 const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 const PLUGIN_MAIN_PAGE_FILE = "index.tsx";
+
+const debug = log.debug(PLUGIN_NAME);
 
 type ConventionalRouterProps = {
   pages: Pattern | Pattern[];
@@ -135,7 +138,9 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
+        debug("Start collectiong pages");
         const routes = collectRoutePages(pages);
+        debug("routes", routes);
         const subRoutesPathAppendToParent: string[] = [];
         routes
           .filter((r) => r.path!.split("/").length === 1)
@@ -152,6 +157,7 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
                 },
           );
 
+        debug("finalRoutes", finalRoutes);
         return {
           code: `
           const routes = ${stringifyRoutes(finalRoutes)};

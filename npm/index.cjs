@@ -1,17 +1,20 @@
 'use strict';
 
 var nodepath = require('path');
+var log = require('debug');
 var fg = require('fast-glob');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
 var nodepath__default = /*#__PURE__*/_interopDefault(nodepath);
+var log__default = /*#__PURE__*/_interopDefault(log);
 var fg__default = /*#__PURE__*/_interopDefault(fg);
 
 // src/index.ts
 var PLUGIN_NAME = "vite-plugin-conventional-router";
 var PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 var PLUGIN_MAIN_PAGE_FILE = "index.tsx";
+var debug = log__default.default.debug(PLUGIN_NAME);
 var stripSlash = (filepath) => {
   return filepath.replace(/^\//, "").replace(/\/$/, "");
 };
@@ -100,7 +103,9 @@ function ConventionalRouter(options) {
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
+        debug("Start collectiong pages");
         const routes = collectRoutePages(pages);
+        debug("routes", routes);
         const subRoutesPathAppendToParent = [];
         routes.filter((r) => r.path.split("/").length === 1).map((route) => arrangeRoutes(routes, route, subRoutesPathAppendToParent));
         const finalRoutes = routes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(
@@ -109,6 +114,7 @@ function ConventionalRouter(options) {
             path: "/" + r.path
           }
         );
+        debug("finalRoutes", finalRoutes);
         return {
           code: `
           const routes = ${stringifyRoutes(finalRoutes)};
