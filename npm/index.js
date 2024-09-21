@@ -9,7 +9,18 @@ var stripSlash = (filepath) => {
   return filepath.replace(/^\//, "").replace(/\/$/, "");
 };
 var filePathToRoutePath = (filepath) => {
-  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(filepath, nodepath.extname(filepath)));
+  filepath = filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") + nodepath.extname(filepath);
+  const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
+  return path_.split("/").map((seg) => {
+    if (seg.startsWith("@")) {
+      return seg.replace("@", ":");
+    }
+    if (seg.startsWith("$")) {
+      const [, p] = /^\$(.+)/.exec(seg) ?? [];
+      return p ? `:${p}?` : seg;
+    }
+    return seg;
+  }).join("/");
 };
 function collectRoutePages(pages) {
   const pageModules = [];
@@ -91,7 +102,6 @@ function ConventionalRouter(options) {
             path: "/" + r.path
           }
         );
-        console.log(finalRoutes);
         return {
           code: `
           const routes = ${stringifyRoutes(finalRoutes)};

@@ -14,5 +14,11 @@ export function Component() {
         <button onClick={
             () => nav('page2')
         }>page2</button>
+        <button onClick={
+            () => nav('page3/page3-1/page3-1-1')
+        }>page3</button>
+        <button onClick={
+            () => nav('page4')
+        }>page4</button>
      </div>
 }

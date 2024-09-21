@@ -17,9 +17,31 @@ const stripSlash = (filepath: string) => {
 };
 
 const filePathToRoutePath = (filepath: string) => {
-  return filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
+  filepath = filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") + nodepath.extname(filepath);
+
+  const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
     ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
-    : stripSlash(filepath.replace(filepath, nodepath.extname(filepath)));
+    : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
+
+  return path_
+    .split("/")
+    .map((seg) => {
+      if (seg.startsWith("@")) {
+        return seg.replace("@", ":");
+      }
+
+      if (seg.startsWith("$")) {
+        const [, p] = /^\$(.+)/.exec(seg) ?? [];
+        return p ? `:${p}?` : seg;
+      }
+
+      return seg;
+      // ? seg.replace("@", ":")
+      // : seg.startsWith("$")
+      //   ? seg.replace(/^\$(.+)/, `:${RegExp.$1}?`)
+      //   : seg;
+    })
+    .join("/");
 };
 
 function collectRoutePages(pages: Pattern[]): NonIndexRouteObject[] {
@@ -133,7 +155,6 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
                   path: "/" + r.path,
                 },
           );
-        console.log(finalRoutes);
 
         return {
           code: `
