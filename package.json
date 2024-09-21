@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsup --watch",
     "build": "cross-env NODE_ENV=production tsup",
-    "e2e": "pnpm exec playwright test",
+    "e2e": "playwright test",
     "example:react": "pnpm --filter react-example run dev"
   },
   "keywords": [],
