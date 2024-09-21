@@ -101,12 +101,10 @@ export const arrangeRoutes = (
 const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
   return `[
     ${routes.map(
-      (route, index) => `{
+      (route) => `{
         path: "${route.path}",
         lazy: () => import("${route.element}"),
         children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[])}
-        // Component: Page$${index}.default,
-        // shouldValidate: !!Page$${index}.shouldValidate
       },`,
     )}
   ]`;
