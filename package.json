@@ -11,7 +11,8 @@
     "dev": "cross-env NODE_ENV=development tsup --watch",
     "build": "cross-env NODE_ENV=production tsup",
     "e2e": "playwright test",
-    "example:react": "pnpm --filter react-example run dev"
+    "test": "vitest --watch=false",
+    "coverage": "vitest run --coverage"
   },
   "keywords": [],
   "author": "wp.l",
@@ -19,7 +20,7 @@
   "exports": {
     "./package.json": "./package.json",
     "./client": {
-      "types": "./npm/client.d.ts"
+      "types": "./client.d.ts"
     },
     ".": {
       "types": "./npm/index.d.ts",
@@ -41,6 +42,7 @@
     "@types/glob-to-regexp": "^0.4.4",
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.3",
+    "@vitest/coverage-istanbul": "^2.1.1",
     "cross-env": "^7.0.3",
     "playwright": "^1.47.1",
     "prettier": "^3.3.3",

@@ -1,11 +1,11 @@
-# @moccona/vite-react-conventional-router
+# @moccona/vite-plugin-react-conventional-router
 
 ## 安装与配置
 
 - 安装
 
 ```sh
-npm i @moccona/vite-react-conventional-router -D
+npm i @moccona/vite-plugin-react-conventional-router -D
 ```
 
 - 配置
@@ -58,13 +58,13 @@ export default function App() {
 ## 支持的文件名与路由的映射
 
 ```
-`src/pages/index.tsx`     -> `/`
-`src/pages/home.tsx`      -> `/home`
-`src/pages/home.@id.tsx`      -> `/home`
-`src/pages/home.list.tsx` -> `/home/list`
-`src/pages/home.list.$id.tsx` -> `/home/list`
+`src/pages/index.tsx`           -> `/`
+`src/pages/home.tsx`            -> `/home`
+`src/pages/home.list.tsx`       -> `/home/list`
+`src/pages/home.@id.tsx`        -> `/home/:id`
+`src/pages/home.list.$id.tsx`   -> `/home/list/:id?`
 ```
 
 ## 如何组织页面文件内容
 
-文件内容组织参考 react-router 的 [**lazy**](https://reactrouter.com/en/main/route/lazy#lazy)。
+文件内容组织参考 react-router 的 [**lazy**](https://reactrouter.com/en/main/route/lazy#lazy) 部分。

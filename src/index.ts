@@ -12,11 +12,11 @@ type ConventionalRouterProps = {
   pages: Pattern | Pattern[];
 };
 
-const stripSlash = (filepath: string) => {
+export const stripSlash = (filepath: string) => {
   return filepath.replace(/^\//, "").replace(/\/$/, "");
 };
 
-const filePathToRoutePath = (filepath: string) => {
+export const filePathToRoutePath = (filepath: string) => {
   filepath = filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") + nodepath.extname(filepath);
 
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
@@ -40,7 +40,7 @@ const filePathToRoutePath = (filepath: string) => {
     .join("/");
 };
 
-function collectRoutePages(pages: Pattern[]): NonIndexRouteObject[] {
+export const collectRoutePages = (pages: Pattern[]): NonIndexRouteObject[] => {
   const pageModules: string[] = [];
   let routes: string[] = [];
 
@@ -71,9 +71,9 @@ function collectRoutePages(pages: Pattern[]): NonIndexRouteObject[] {
         element: pageModules[index],
       };
     });
-}
+};
 
-const isSubPath = (parentPath: string, subPath: string) => {
+export const isSubPath = (parentPath: string, subPath: string) => {
   if (
     parentPath !== "" &&
     subPath.startsWith(parentPath) &&
@@ -85,7 +85,7 @@ const isSubPath = (parentPath: string, subPath: string) => {
   return false;
 };
 
-const arrangeRoutes = (
+export const arrangeRoutes = (
   routes: NonIndexRouteObject[],
   parent: NonIndexRouteObject,
   subRoutesPathAppendToParent: string[],
@@ -101,14 +101,14 @@ const arrangeRoutes = (
 const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
   return `[
     ${routes.map(
-      (route, index) => `{
+    (route, index) => `{
         path: "${route.path}",
         lazy: () => import("${route.element}"),
         children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[])}
         // Component: Page$${index}.default,
         // shouldValidate: !!Page$${index}.shouldValidate
       },`,
-    )}
+  )}
   ]`;
 };
 
@@ -146,9 +146,9 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
             r.path!.startsWith("/")
               ? r
               : {
-                  ...r,
-                  path: "/" + r.path,
-                },
+                ...r,
+                path: "/" + r.path,
+              },
           );
 
         return {

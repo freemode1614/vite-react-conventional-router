@@ -19,6 +19,9 @@
     "noUnusedLocals": true,
     /* Completeness */
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }
