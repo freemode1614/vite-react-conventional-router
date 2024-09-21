@@ -8,7 +8,7 @@ export function Component() {
     const { id } = useParams();
     const nav = useNavigate();
     return <div>
-        <span role="heading">page5.@id.tsx ({id})</span>
+        <span role=''>page5.@id.tsx ({id})</span>
         <button onClick={
             () => nav(-1)
         }>back</button>
