@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 
 export const shouldValidate = false;
 
-Component.displayName = 'page3-1-1';
+Component.displayName = 'page2-1-1';
 
 export function Component() {
     const nav = useNavigate();
