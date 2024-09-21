@@ -48,8 +48,7 @@ function collectRoutePages(pages) {
         files = files.map((file) => file.slice(1));
       }
     }
-    const files_ = files.map((file) => file.join("/")).flat();
-    routes = [...routes, ...files_];
+    routes = [...routes, ...files.map((file) => file.join("/")).flat()];
   }
   return routes.map((s) => filePathToRoutePath(s)).map((route, index) => {
     return {
@@ -103,7 +102,7 @@ function ConventionalRouter(options) {
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        debug("Start collectiong pages");
+        this.info("Start collectiong pages");
         const routes = collectRoutePages(pages);
         debug("routes", routes);
         const subRoutesPathAppendToParent = [];
