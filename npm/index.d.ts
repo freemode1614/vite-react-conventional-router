@@ -21,6 +21,7 @@ declare const collectRoutePages: (pages: Pattern[]) => NonIndexRouteObject[];
  * Sub-path evaluation.
  */
 declare const isSubPath: (parentPath: string, subPath: string) => boolean;
+declare const isLayoutFilePath: (filepath: string) => boolean;
 /**
  *
  * Two possible scenario
@@ -43,6 +44,7 @@ declare const isLayoutRoute: (route: NonIndexRouteObject, layoutRoute: NonIndexR
  * 2.
  * xx/xx.tsx
  * xx/xx.errorBoundary.tsx
+ *
  */
 declare const isErrorBoundaryRoute: (route: NonIndexRouteObject, errorBoundaryRoute: NonIndexRouteObject) => boolean;
 /**
@@ -55,4 +57,4 @@ declare const arrangeRoutes: (routes: NonIndexRouteObject[], parent: NonIndexRou
 declare const stringifyRoutes: (routes: NonIndexRouteObject[]) => string;
 declare function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin;
 
-export { arrangeRoutes, collectRoutePages, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryRoute, isLayoutRoute, isSubPath, stringifyRoutes, stripSlash };
+export { arrangeRoutes, collectRoutePages, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isSubPath, stringifyRoutes, stripSlash };

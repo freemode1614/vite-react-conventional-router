@@ -67,11 +67,14 @@ var isSubPath = (parentPath, subPath) => {
   }
   return false;
 };
+var isLayoutFilePath = (filepath) => {
+  return new RegExp(
+    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0}(${LAYOUT_FILE_NAME})(\\.tsx)$`
+  ).test(nodepath__default.default.basename(filepath));
+};
 var isLayoutRoute = (route, layoutRoute) => {
   if (nodepath__default.default.dirname(route.element) === nodepath__default.default.dirname(layoutRoute.element)) {
-    return new RegExp(
-      `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0}(${LAYOUT_FILE_NAME})(\\.tsx)$`
-    ).test(nodepath__default.default.basename(layoutRoute.element));
+    return isLayoutFilePath(nodepath__default.default.basename(layoutRoute.element));
   }
   return false;
 };
@@ -85,39 +88,46 @@ var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
 };
 var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent) => {
   const subs = routes.filter((route) => isSubPath(parent.path, route.path));
-  const layout = routes.find((route) => isLayoutRoute(parent, route));
   const errorBoundary = routes.find((route) => isErrorBoundaryRoute(parent, route));
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
-  if (layout) {
-    subRoutesPathAppendToParent.push(`/${layout.path}`);
-  }
   if (errorBoundary) {
     subRoutesPathAppendToParent.push(`/${errorBoundary.path}`);
   }
   Object.assign(parent, {
     path: "/" + parent.path,
-    children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent))
+    children: subs.map((sub) => {
+      const layout = routes.find((route) => isLayoutRoute(sub, route));
+      if (layout) {
+        subRoutesPathAppendToParent.push(`/${layout.path}`);
+        if (parent.element.endsWith(PLUGIN_MAIN_PAGE_FILE)) {
+          return Object.assign(layout, {
+            path: layout.path,
+            children: [
+              arrangeRoutes(
+                routes.filter((r) => r.element !== layout.element),
+                sub,
+                subRoutesPathAppendToParent
+              )
+            ]
+          });
+        }
+      }
+      return arrangeRoutes(routes, sub, subRoutesPathAppendToParent);
+    }),
+    ErrorBoundary: errorBoundary ? errorBoundary.element : void 0
   });
-  if (layout) {
-    if (errorBoundary) {
-      Object.assign(layout, {
-        ErrorBoundary: errorBoundary.element
-      });
-    }
-    return Object.assign(layout, {
-      path: parent.path,
-      children: [parent]
-    });
-  }
   return parent;
 };
 var stringifyRoutes = (routes) => {
   const code = routes.map(
     (route) => `{
         async lazy(){
-          const { default: Component, ...rest }  = await import("${route.element}")
+          const { default: Component, ...rest }  = await import("${route.element}");
+          ${route.ErrorBoundary ? `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}");
+            ErrorBoundary = ErrorBoundary_;
+          ` : ""}
           return {
-            ...rest, Component,
+            ...rest, ErrorBoundary, Component,
           }
         },
         path: "${route.path}",
@@ -144,9 +154,19 @@ function ConventionalRouter(options) {
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        const routes = collectRoutePages(pages);
+        let routes = collectRoutePages(pages);
         const subRoutesPathAppendToParent = [];
         const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
+        const layoutRoute = routes.find((route) => route.path === LAYOUT_FILE_NAME);
+        if (notFoundRoute) {
+          subRoutesPathAppendToParent.push(`/${notFoundRoute.path}`);
+        }
+        if (layoutRoute) {
+          subRoutesPathAppendToParent.push(`/${layoutRoute.path}`);
+        }
+        routes = routes.filter((route) => {
+          return notFoundRoute && route.path !== notFoundRoute.path || layoutRoute && layoutRoute.path !== route.path;
+        });
         routes.filter((r) => r.path.split("/").length === 1).map((route) => arrangeRoutes(routes, route, subRoutesPathAppendToParent));
         const mapCallback = (r) => {
           if (r.path.startsWith("/")) {
@@ -158,7 +178,16 @@ function ConventionalRouter(options) {
             };
           }
         };
-        const finalRoutes = routes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(mapCallback);
+        let finalRoutes = routes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(mapCallback);
+        if (layoutRoute) {
+          finalRoutes = [
+            {
+              ...layoutRoute,
+              path: "/",
+              children: finalRoutes
+            }
+          ];
+        }
         if (notFoundRoute) {
           finalRoutes.push({ ...notFoundRoute, path: "*" });
         }
@@ -180,6 +209,7 @@ exports.collectRoutePages = collectRoutePages;
 exports.default = ConventionalRouter;
 exports.filePathToRoutePath = filePathToRoutePath;
 exports.isErrorBoundaryRoute = isErrorBoundaryRoute;
+exports.isLayoutFilePath = isLayoutFilePath;
 exports.isLayoutRoute = isLayoutRoute;
 exports.isSubPath = isSubPath;
 exports.stringifyRoutes = stringifyRoutes;
