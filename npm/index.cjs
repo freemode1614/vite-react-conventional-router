@@ -87,35 +87,32 @@ var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
   return false;
 };
 var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent) => {
-  const subs = routes.filter((route) => isSubPath(parent.path, route.path));
+  const layout = routes.find((route) => isLayoutRoute(parent, route));
+  const subs = routes.filter((route) => isSubPath(parent.path, route.path) && route.path !== layout?.path);
   const errorBoundary = routes.find((route) => isErrorBoundaryRoute(parent, route));
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
+  if (layout) {
+    subRoutesPathAppendToParent.push(`/${layout.path}`);
+  }
   if (errorBoundary) {
     subRoutesPathAppendToParent.push(`/${errorBoundary.path}`);
   }
   Object.assign(parent, {
     path: "/" + parent.path,
-    children: subs.map((sub) => {
-      const layout = routes.find((route) => isLayoutRoute(sub, route));
-      if (layout) {
-        subRoutesPathAppendToParent.push(`/${layout.path}`);
-        if (parent.element.endsWith(PLUGIN_MAIN_PAGE_FILE)) {
-          return Object.assign(layout, {
-            path: layout.path,
-            children: [
-              arrangeRoutes(
-                routes.filter((r) => r.element !== layout.element),
-                sub,
-                subRoutesPathAppendToParent
-              )
-            ]
-          });
-        }
-      }
-      return arrangeRoutes(routes, sub, subRoutesPathAppendToParent);
-    }),
+    children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent)),
     ErrorBoundary: errorBoundary ? errorBoundary.element : void 0
   });
+  if (layout) {
+    const index = routes.findIndex((route) => route.element === parent.element);
+    routes.splice(index, 1);
+    if (parent.element.endsWith(PLUGIN_MAIN_PAGE_FILE)) {
+      return Object.assign(layout, {
+        path: parent.path,
+        children: [parent],
+        ErrorBoundary: parent.ErrorBoundary
+      });
+    }
+  }
   return parent;
 };
 var stringifyRoutes = (routes) => {
@@ -123,6 +120,7 @@ var stringifyRoutes = (routes) => {
     (route) => `{
         async lazy(){
           const { default: Component, ...rest }  = await import("${route.element}");
+          let ErrorBoundary = undefined;
           ${route.ErrorBoundary ? `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}");
             ErrorBoundary = ErrorBoundary_;
           ` : ""}

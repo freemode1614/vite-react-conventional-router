@@ -2,7 +2,7 @@ import nodepath from "node:path";
 
 import fg, { Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
-import { parseAstAsync, type Plugin } from "vite";
+import { type Plugin } from "vite";
 
 const PLUGIN_NAME = "vite-plugin-conventional-router";
 const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
@@ -159,10 +159,15 @@ export const arrangeRoutes = (
   parent: NonIndexRouteObject,
   subRoutesPathAppendToParent: string[],
 ): NonIndexRouteObject => {
-  const subs = routes.filter((route) => isSubPath(parent.path!, route.path!));
+  const layout = routes.find((route) => isLayoutRoute(parent, route));
+  const subs = routes.filter((route) => isSubPath(parent.path!, route.path!) && route.path !== layout?.path);
   const errorBoundary = routes.find((route) => isErrorBoundaryRoute(parent, route));
 
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path!));
+
+  if (layout) {
+    subRoutesPathAppendToParent.push(`/${layout.path!}`);
+  }
 
   if (errorBoundary) {
     subRoutesPathAppendToParent.push(`/${errorBoundary.path!}`);
@@ -170,28 +175,21 @@ export const arrangeRoutes = (
 
   Object.assign(parent, {
     path: "/" + parent.path!,
-    children: subs.map((sub) => {
-      const layout = routes.find((route) => isLayoutRoute(sub, route));
-      if (layout) {
-        subRoutesPathAppendToParent.push(`/${layout.path!}`);
-        if ((parent.element! as string).endsWith(PLUGIN_MAIN_PAGE_FILE)) {
-          return Object.assign(layout, {
-            path: layout.path!,
-            children: [
-              arrangeRoutes(
-                routes.filter((r) => r.element !== layout.element),
-                sub,
-                subRoutesPathAppendToParent,
-              ),
-            ],
-          });
-        }
-      }
-
-      return arrangeRoutes(routes, sub, subRoutesPathAppendToParent);
-    }),
+    children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent)),
     ErrorBoundary: errorBoundary ? errorBoundary.element! : undefined,
   });
+
+  if (layout) {
+    const index = routes.findIndex((route) => route.element === parent.element);
+    routes.splice(index, 1);
+    if ((parent.element! as string).endsWith(PLUGIN_MAIN_PAGE_FILE)) {
+      return Object.assign(layout, {
+        path: parent.path,
+        children: [parent],
+        ErrorBoundary: parent.ErrorBoundary,
+      });
+    }
+  }
 
   return parent;
 };
@@ -204,6 +202,7 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
     (route) => `{
         async lazy(){
           const { default: Component, ...rest }  = await import("${route.element}");
+          let ErrorBoundary = undefined;
           ${
             route.ErrorBoundary
               ? `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}");
