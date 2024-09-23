@@ -24,6 +24,6 @@
   },
   "include": [
     "src",
-    "./node_modules/@moccona/vite-react-conventional-router/client.d.ts"
+    "./node_modules/@moccona/vite-plugin-react-conventional-router/client.d.ts"
   ]
 }

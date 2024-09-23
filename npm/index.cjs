@@ -1,20 +1,24 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var nodepath = require('path');
-var log = require('debug');
 var fg = require('fast-glob');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
 var nodepath__default = /*#__PURE__*/_interopDefault(nodepath);
-var log__default = /*#__PURE__*/_interopDefault(log);
 var fg__default = /*#__PURE__*/_interopDefault(fg);
 
 // src/index.ts
 var PLUGIN_NAME = "vite-plugin-conventional-router";
 var PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 var PLUGIN_MAIN_PAGE_FILE = "index.tsx";
-var debug = log__default.default.debug(PLUGIN_NAME);
+var LAYOUT_FILE_NAME = "layout";
+var NOT_FOUND_FILE_NAME = "404";
+var ERROR_BOUNDARY_FILE_NAME = "errorBoundary";
+var OPTIONAL_ROUTE_FLAG = "$";
+var DYNAMIC_ROUTE_FLAG = "@";
 var stripSlash = (filepath) => {
   return filepath.replace(/^\//, "").replace(/\/$/, "");
 };
@@ -22,17 +26,17 @@ var filePathToRoutePath = (filepath) => {
   filepath = filepath.replace(nodepath__default.default.extname(filepath), "").replaceAll(".", "/") + nodepath__default.default.extname(filepath);
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(nodepath__default.default.extname(filepath), ""));
   return path_.split("/").map((seg) => {
-    if (seg.startsWith("@")) {
-      return seg.replace("@", ":");
+    if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
+      return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
     }
-    if (seg.startsWith("$")) {
-      const [, p] = /^\$(.+)/.exec(seg) ?? [];
+    if (seg.startsWith(OPTIONAL_ROUTE_FLAG)) {
+      const [, p] = new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
       return p ? `:${p}?` : seg;
     }
     return seg;
   }).join("/");
 };
-function collectRoutePages(pages) {
+var collectRoutePages = (pages) => {
   const pageModules = [];
   let routes = [];
   for (const pattern of pages) {
@@ -56,33 +60,71 @@ function collectRoutePages(pages) {
       element: pageModules[index]
     };
   });
-}
+};
 var isSubPath = (parentPath, subPath) => {
   if (parentPath !== "" && subPath.startsWith(parentPath) && subPath.split("/").length - parentPath.split("/").length === 1) {
     return true;
   }
   return false;
 };
+var isLayoutRoute = (route, layoutRoute) => {
+  if (nodepath__default.default.dirname(route.element) === nodepath__default.default.dirname(layoutRoute.element)) {
+    return new RegExp(
+      `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0}(${LAYOUT_FILE_NAME})(\\.tsx)$`
+    ).test(nodepath__default.default.basename(layoutRoute.element));
+  }
+  return false;
+};
+var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
+  if (nodepath__default.default.dirname(route.element) === nodepath__default.default.dirname(errorBoundaryRoute.element)) {
+    return new RegExp(
+      `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0}(${ERROR_BOUNDARY_FILE_NAME})(\\.tsx)$`
+    ).test(nodepath__default.default.basename(errorBoundaryRoute.element));
+  }
+  return false;
+};
 var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent) => {
   const subs = routes.filter((route) => isSubPath(parent.path, route.path));
+  const layout = routes.find((route) => isLayoutRoute(parent, route));
+  const errorBoundary = routes.find((route) => isErrorBoundaryRoute(parent, route));
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
-  return Object.assign(parent, {
+  if (layout) {
+    subRoutesPathAppendToParent.push(`/${layout.path}`);
+  }
+  if (errorBoundary) {
+    subRoutesPathAppendToParent.push(`/${errorBoundary.path}`);
+  }
+  Object.assign(parent, {
     path: "/" + parent.path,
     children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent))
   });
+  if (layout) {
+    if (errorBoundary) {
+      Object.assign(layout, {
+        ErrorBoundary: errorBoundary.element
+      });
+    }
+    return Object.assign(layout, {
+      path: parent.path,
+      children: [parent]
+    });
+  }
+  return parent;
 };
 var stringifyRoutes = (routes) => {
-  return `[
-    ${routes.map(
-    (route, index) => `{
+  const code = routes.map(
+    (route) => `{
+        async lazy(){
+          const { default: Component, ...rest }  = await import("${route.element}")
+          return {
+            ...rest, Component,
+          }
+        },
         path: "${route.path}",
-        lazy: () => import("${route.element}"),
         children: ${!route.children ? "[]" : stringifyRoutes(route.children)}
-        // Component: Page$${index}.default,
-        // shouldValidate: !!Page$${index}.shouldValidate
       },`
-  )}
-  ]`;
+  );
+  return `[${code}]`;
 };
 function ConventionalRouter(options) {
   if (!options) {
@@ -102,23 +144,30 @@ function ConventionalRouter(options) {
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        this.info("Start collectiong pages");
         const routes = collectRoutePages(pages);
-        debug("routes", routes);
         const subRoutesPathAppendToParent = [];
+        const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
         routes.filter((r) => r.path.split("/").length === 1).map((route) => arrangeRoutes(routes, route, subRoutesPathAppendToParent));
-        const finalRoutes = routes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(
-          (r) => r.path.startsWith("/") ? r : {
-            ...r,
-            path: "/" + r.path
+        const mapCallback = (r) => {
+          if (r.path.startsWith("/")) {
+            return r;
+          } else {
+            return {
+              ...r,
+              path: `/${r.path}`
+            };
           }
-        );
-        debug("finalRoutes", finalRoutes);
+        };
+        const finalRoutes = routes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(mapCallback);
+        if (notFoundRoute) {
+          finalRoutes.push({ ...notFoundRoute, path: "*" });
+        }
         return {
           code: `
           const routes = ${stringifyRoutes(finalRoutes)};
           console.log(routes);
-          export default routes;`
+          export default routes;
+`
         };
       }
       return null;
@@ -126,6 +175,14 @@ function ConventionalRouter(options) {
   };
 }
 
-module.exports = ConventionalRouter;
+exports.arrangeRoutes = arrangeRoutes;
+exports.collectRoutePages = collectRoutePages;
+exports.default = ConventionalRouter;
+exports.filePathToRoutePath = filePathToRoutePath;
+exports.isErrorBoundaryRoute = isErrorBoundaryRoute;
+exports.isLayoutRoute = isLayoutRoute;
+exports.isSubPath = isSubPath;
+exports.stringifyRoutes = stringifyRoutes;
+exports.stripSlash = stripSlash;
 //# sourceMappingURL=index.cjs.map
 //# sourceMappingURL=index.cjs.map

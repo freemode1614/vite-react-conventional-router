@@ -8,14 +8,27 @@ const PLUGIN_NAME = "vite-plugin-conventional-router";
 const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 const PLUGIN_MAIN_PAGE_FILE = "index.tsx";
 
+const LAYOUT_FILE_NAME = "layout",
+  NOT_FOUND_FILE_NAME = "404",
+  ERROR_BOUNDARY_FILE_NAME = "errorBoundary";
+
+const OPTIONAL_ROUTE_FLAG = "$",
+  DYNAMIC_ROUTE_FLAG = "@";
+
 type ConventionalRouterProps = {
   pages: Pattern | Pattern[];
 };
 
+/**
+ * Strp slash before and after.
+ */
 export const stripSlash = (filepath: string) => {
   return filepath.replace(/^\//, "").replace(/\/$/, "");
 };
 
+/**
+ * Route path generate by file path.
+ */
 export const filePathToRoutePath = (filepath: string) => {
   filepath = filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") + nodepath.extname(filepath);
 
@@ -26,12 +39,12 @@ export const filePathToRoutePath = (filepath: string) => {
   return path_
     .split("/")
     .map((seg) => {
-      if (seg.startsWith("@")) {
-        return seg.replace("@", ":");
+      if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
+        return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
       }
 
-      if (seg.startsWith("$")) {
-        const [, p] = /^\$(.+)/.exec(seg) ?? [];
+      if (seg.startsWith(OPTIONAL_ROUTE_FLAG)) {
+        const [, p] = new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
         return p ? `:${p}?` : seg;
       }
 
@@ -40,6 +53,9 @@ export const filePathToRoutePath = (filepath: string) => {
     .join("/");
 };
 
+/**
+ * Collect files from FS by fast-glob.
+ */
 export const collectRoutePages = (pages: Pattern[]): NonIndexRouteObject[] => {
   const pageModules: string[] = [];
   let routes: string[] = [];
@@ -73,6 +89,9 @@ export const collectRoutePages = (pages: Pattern[]): NonIndexRouteObject[] => {
     });
 };
 
+/**
+ * Sub-path evaluation.
+ */
 export const isSubPath = (parentPath: string, subPath: string) => {
   if (
     parentPath !== "" &&
@@ -85,29 +104,109 @@ export const isSubPath = (parentPath: string, subPath: string) => {
   return false;
 };
 
+/**
+ *
+ * Two possible scenario
+ * 1.
+ * xx/xx/index.tsx
+ * xx/xx/layout.tsx
+ *
+ * 2.
+ * xx/xx.tsx
+ * xx/xx.layout.tsx
+ */
+export const isLayoutRoute = (route: NonIndexRouteObject, layoutRoute: NonIndexRouteObject) => {
+  if (nodepath.dirname(route.element! as string) === nodepath.dirname(layoutRoute.element! as string)) {
+    return new RegExp(
+      `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0}(${LAYOUT_FILE_NAME})(\\.tsx)$`,
+    ).test(nodepath.basename(layoutRoute.element! as string));
+  }
+
+  return false;
+};
+
+/**
+ *
+ * Two possible scenario
+ * 1.
+ * xx/xx/index.tsx
+ * xx/xx/errorBoundary.tsx
+ *
+ * 2.
+ * xx/xx.tsx
+ * xx/xx.errorBoundary.tsx
+ */
+export const isErrorBoundaryRoute = (route: NonIndexRouteObject, errorBoundaryRoute: NonIndexRouteObject) => {
+  if (nodepath.dirname(route.element! as string) === nodepath.dirname(errorBoundaryRoute.element! as string)) {
+    return new RegExp(
+      `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0}(${ERROR_BOUNDARY_FILE_NAME})(\\.tsx)$`,
+    ).test(nodepath.basename(errorBoundaryRoute.element! as string));
+  }
+
+  return false;
+};
+
+/**
+ * Arrange routes.
+ */
 export const arrangeRoutes = (
   routes: NonIndexRouteObject[],
   parent: NonIndexRouteObject,
   subRoutesPathAppendToParent: string[],
 ): NonIndexRouteObject => {
   const subs = routes.filter((route) => isSubPath(parent.path!, route.path!));
+  const layout = routes.find((route) => isLayoutRoute(parent, route));
+  const errorBoundary = routes.find((route) => isErrorBoundaryRoute(parent, route));
+
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path!));
-  return Object.assign(parent, {
+
+  if (layout) {
+    subRoutesPathAppendToParent.push(`/${layout.path!}`);
+  }
+
+  if (errorBoundary) {
+    subRoutesPathAppendToParent.push(`/${errorBoundary.path!}`);
+  }
+
+  Object.assign(parent, {
     path: "/" + parent.path!,
     children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent)),
   });
+
+  if (layout) {
+    if (errorBoundary) {
+      Object.assign(layout, {
+        ErrorBoundary: errorBoundary.element! as string,
+      } as unknown as NonIndexRouteObject);
+    }
+
+    return Object.assign(layout, {
+      path: parent.path,
+      children: [parent],
+    });
+  }
+
+  return parent;
 };
 
-const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
-  return `[
-    ${routes.map(
-      (route) => `{
+/**
+ * Stringify routes data.
+ */
+export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
+  const code = routes.map(
+    (route) => `{
+        async lazy(){
+          const { default: Component, ...rest }  = await import("${route.element}")
+          return {
+            ...rest, Component,
+          }
+        },
         path: "${route.path}",
-        lazy: () => import("${route.element}"),
         children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[])}
       },`,
-    )}
-  ]`;
+  );
+
+  return `[${code}]`;
 };
 
 export default function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin {
@@ -134,26 +233,36 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const routes = collectRoutePages(pages);
         const subRoutesPathAppendToParent: string[] = [];
+
+        const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
+
         routes
           .filter((r) => r.path!.split("/").length === 1)
           .map((route) => arrangeRoutes(routes, route, subRoutesPathAppendToParent));
 
-        const finalRoutes = routes
-          .filter((r) => !subRoutesPathAppendToParent.includes(r.path!))
-          .map((r) =>
-            r.path!.startsWith("/")
-              ? r
-              : {
-                  ...r,
-                  path: "/" + r.path,
-                },
-          );
+        const mapCallback = (r: NonIndexRouteObject) => {
+          if (r.path!.startsWith("/")) {
+            return r;
+          } else {
+            return {
+              ...r,
+              path: `/${r.path}`,
+            };
+          }
+        };
+
+        const finalRoutes = routes.filter((r) => !subRoutesPathAppendToParent.includes(r.path!)).map(mapCallback);
+
+        if (notFoundRoute) {
+          finalRoutes.push({ ...notFoundRoute, path: "*" });
+        }
 
         return {
           code: `
           const routes = ${stringifyRoutes(finalRoutes)};
           console.log(routes);
-          export default routes;`,
+          export default routes;
+`,
         };
       }
 

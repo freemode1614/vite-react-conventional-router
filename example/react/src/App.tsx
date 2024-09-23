@@ -1,4 +1,4 @@
-import routes from "virtual:routes"
+import routes from "virtual:routes";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 function App() {
@@ -8,7 +8,7 @@ function App() {
       <div className="pages">
         <RouterProvider router={createBrowserRouter(routes)} fallbackElement={
           <div>
-              Loading
+            Loading
           </div>
         } />
       </div>

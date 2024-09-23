@@ -4,13 +4,13 @@ export const shouldValidate = false;
 
 Component.displayName = 'page4';
 
-export function Component() {
-    const nav = useNavigate();
-    const { id } = useParams();
-    return <div>
-        <span role="heading">page4.list.{id}.tsx</span>
-        <button onClick={
-            () => nav(-1)
-        }>back</button>
-     </div>
+export default function Component() {
+  const nav = useNavigate();
+  const { id } = useParams();
+  return <div>
+    <span role="heading">page4.list.{id}.tsx</span>
+    <button onClick={
+      () => nav(-1)
+    }>back</button>
+  </div>
 }
