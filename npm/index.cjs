@@ -75,7 +75,8 @@ var isLayoutFilePath = (filepath) => {
 };
 var isLayoutRoute = (route, layoutRoute) => {
   if (nodepath__default.default.dirname(route.element) === nodepath__default.default.dirname(layoutRoute.element)) {
-    return isLayoutFilePath(nodepath__default.default.basename(layoutRoute.element)) && layoutRoute.path.split("/").length - route.path.split("/").length === 1;
+    const condition1 = isLayoutFilePath(nodepath__default.default.basename(layoutRoute.element));
+    return condition1 && layoutRoute.path.split("/").length - route.path.split("/").length === 1;
   }
   return false;
 };
@@ -86,7 +87,11 @@ var isErrorBoundaryFilePath = (filepath) => {
 };
 var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
   if (nodepath__default.default.dirname(route.element) === nodepath__default.default.dirname(errorBoundaryRoute.element)) {
-    return isErrorBoundaryFilePath(nodepath__default.default.basename(errorBoundaryRoute.element)) && errorBoundaryRoute.path.split("/").length - route.path.split("/").length === 1;
+    const condition1 = isErrorBoundaryFilePath(nodepath__default.default.basename(errorBoundaryRoute.element));
+    if (route.path.split("/").length === 1) {
+      return condition1;
+    }
+    return condition1 && errorBoundaryRoute.path.split("/").length - route.path.split("/").length === 1;
   }
   return false;
 };
@@ -151,15 +156,16 @@ function ConventionalRouter(options) {
         const routes = collectRoutePages(pages);
         const subRoutesPathAppendToParent = [];
         const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
+        const rootLayoutRoute = routes.find((route) => route.path === LAYOUT_FILE_NAME);
         const layoutsAndErrorBoundaries = routes.filter((route) => {
-          return isLayoutFilePath(nodepath__default.default.basename(route.element)) || isErrorBoundaryFilePath(nodepath__default.default.basename(route.element));
+          return (isLayoutFilePath(nodepath__default.default.basename(route.element)) || isErrorBoundaryFilePath(nodepath__default.default.basename(route.element))) && route.path !== rootLayoutRoute?.path;
         });
         if (notFoundRoute) {
           subRoutesPathAppendToParent.push(`/${notFoundRoute.path}`);
         }
         const layoutsAndErrorBoundariesElements = new Set(layoutsAndErrorBoundaries.map((route) => route.element));
         const routesReadyToArrange = routes.filter(
-          (r) => !layoutsAndErrorBoundariesElements.has(r.element) && r.element !== notFoundRoute?.element
+          (r) => !layoutsAndErrorBoundariesElements.has(r.element) && r.element !== notFoundRoute?.element && r.element !== rootLayoutRoute?.element
         );
         const mapCallback = (r) => {
           if (r.path.startsWith("/")) {
@@ -179,7 +185,16 @@ function ConventionalRouter(options) {
         intermediaRoutes.filter((r) => r.path.split("/").length > 2).forEach(
           (route) => arrangeRoutes(intermediaRoutes, route, subRoutesPathAppendToParent, layoutsAndErrorBoundaries)
         );
-        const finalRoutes = intermediaRoutes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(mapCallback);
+        let finalRoutes = intermediaRoutes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(mapCallback);
+        if (rootLayoutRoute) {
+          finalRoutes = [
+            {
+              ...rootLayoutRoute,
+              path: "/",
+              children: finalRoutes
+            }
+          ];
+        }
         if (notFoundRoute) {
           finalRoutes.push({ ...notFoundRoute, path: "*" });
         }

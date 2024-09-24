@@ -125,10 +125,8 @@ export const isLayoutFilePath = (filepath: string) => {
  */
 export const isLayoutRoute = (route: NonIndexRouteObject, layoutRoute: NonIndexRouteObject) => {
   if (nodepath.dirname(route.element! as string) === nodepath.dirname(layoutRoute.element! as string)) {
-    return (
-      isLayoutFilePath(nodepath.basename(layoutRoute.element! as string)) &&
-      layoutRoute.path!.split("/").length - route.path!.split("/").length === 1
-    );
+    const condition1 = isLayoutFilePath(nodepath.basename(layoutRoute.element! as string));
+    return condition1 && layoutRoute.path!.split("/").length - route.path!.split("/").length === 1;
   }
 
   return false;
@@ -154,10 +152,11 @@ export const isErrorBoundaryFilePath = (filepath: string) => {
  */
 export const isErrorBoundaryRoute = (route: NonIndexRouteObject, errorBoundaryRoute: NonIndexRouteObject) => {
   if (nodepath.dirname(route.element! as string) === nodepath.dirname(errorBoundaryRoute.element! as string)) {
-    return (
-      isErrorBoundaryFilePath(nodepath.basename(errorBoundaryRoute.element! as string)) &&
-      errorBoundaryRoute.path!.split("/").length - route.path!.split("/").length === 1
-    );
+    const condition1 = isErrorBoundaryFilePath(nodepath.basename(errorBoundaryRoute.element! as string));
+    if (route.path!.split("/").length === 1) {
+      return condition1;
+    }
+    return condition1 && errorBoundaryRoute.path!.split("/").length - route.path!.split("/").length === 1;
   }
 
   return false;
@@ -255,11 +254,13 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
          * Only need one not found fallback
          */
         const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
+        const rootLayoutRoute = routes.find((route) => route.path === LAYOUT_FILE_NAME);
 
         const layoutsAndErrorBoundaries = routes.filter((route) => {
           return (
-            isLayoutFilePath(nodepath.basename(route.element! as string)) ||
-            isErrorBoundaryFilePath(nodepath.basename(route.element! as string))
+            (isLayoutFilePath(nodepath.basename(route.element! as string)) ||
+              isErrorBoundaryFilePath(nodepath.basename(route.element! as string))) &&
+            route.path !== rootLayoutRoute?.path
           );
         });
 
@@ -270,8 +271,12 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
         const layoutsAndErrorBoundariesElements = new Set(layoutsAndErrorBoundaries.map((route) => route.element));
 
         const routesReadyToArrange = routes.filter(
-          (r) => !layoutsAndErrorBoundariesElements.has(r.element!) && r.element !== notFoundRoute?.element,
+          (r) =>
+            !layoutsAndErrorBoundariesElements.has(r.element!) &&
+            r.element !== notFoundRoute?.element &&
+            r.element !== rootLayoutRoute?.element,
         );
+
         const mapCallback = (r: NonIndexRouteObject) => {
           if (r.path!.startsWith("/")) {
             return r;
@@ -304,9 +309,19 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
             arrangeRoutes(intermediaRoutes, route, subRoutesPathAppendToParent, layoutsAndErrorBoundaries),
           );
 
-        const finalRoutes = intermediaRoutes
+        let finalRoutes = intermediaRoutes
           .filter((r) => !subRoutesPathAppendToParent.includes(r.path!))
           .map(mapCallback);
+
+        if (rootLayoutRoute) {
+          finalRoutes = [
+            {
+              ...rootLayoutRoute,
+              path: "/",
+              children: finalRoutes,
+            },
+          ];
+        }
 
         if (notFoundRoute) {
           finalRoutes.push({ ...notFoundRoute, path: "*" });
