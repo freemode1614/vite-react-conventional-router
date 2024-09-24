@@ -9,7 +9,7 @@ export default function Component() {
   return <div>
     <span role="heading">page4.list.tsx</span>
     <button onClick={
-      () => nav("/page4/list/123")
+      () => nav("123")
     }>123</button>
     <Outlet />
   </div>

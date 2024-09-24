@@ -9,8 +9,8 @@ export default function Component() {
   return <div>
     <span role="heading">page4.tsx</span>
     <button onClick={
-      () => nav(-1)
-    }>/</button>
+      () => nav('list')
+    }>List</button>
     <Outlet />
   </div>
 }

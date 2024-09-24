@@ -5,6 +5,7 @@ import { Plugin } from 'vite';
 type ConventionalRouterProps = {
     pages: Pattern | Pattern[];
 };
+declare const deepCopy: <T = unknown>(data: T) => T;
 /**
  * Strp slash before and after.
  */
@@ -34,6 +35,7 @@ declare const isLayoutFilePath: (filepath: string) => boolean;
  * xx/xx.layout.tsx
  */
 declare const isLayoutRoute: (route: NonIndexRouteObject, layoutRoute: NonIndexRouteObject) => boolean;
+declare const isErrorBoundaryFilePath: (filepath: string) => boolean;
 /**
  *
  * Two possible scenario
@@ -50,11 +52,11 @@ declare const isErrorBoundaryRoute: (route: NonIndexRouteObject, errorBoundaryRo
 /**
  * Arrange routes.
  */
-declare const arrangeRoutes: (routes: NonIndexRouteObject[], parent: NonIndexRouteObject, subRoutesPathAppendToParent: string[]) => NonIndexRouteObject;
+declare const arrangeRoutes: (routes: NonIndexRouteObject[], parent: NonIndexRouteObject, subRoutesPathAppendToParent: string[], layoutAndErrorBoundaries?: NonIndexRouteObject[]) => NonIndexRouteObject;
 /**
  * Stringify routes data.
  */
 declare const stringifyRoutes: (routes: NonIndexRouteObject[]) => string;
 declare function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin;
 
-export { arrangeRoutes, collectRoutePages, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isSubPath, stringifyRoutes, stripSlash };
+export { arrangeRoutes, collectRoutePages, deepCopy, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryFilePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isSubPath, stringifyRoutes, stripSlash };
