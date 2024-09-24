@@ -79,7 +79,7 @@ var isErrorBoundaryFilePath = (filepath) => {
 var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
   if (nodepath.dirname(route.element) === nodepath.dirname(errorBoundaryRoute.element)) {
     const condition1 = isErrorBoundaryFilePath(nodepath.basename(errorBoundaryRoute.element));
-    if (route.path.split("/").length === 1) {
+    if (route.path.split("/").length === 1 && route.path === "") {
       return condition1;
     }
     return condition1 && errorBoundaryRoute.path.split("/").length - route.path.split("/").length === 1;
