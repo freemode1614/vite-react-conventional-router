@@ -6,7 +6,7 @@ function App() {
     <>
       <h1 role='main'>Vite + React</h1>
       <div className="pages">
-        <RouterProvider router={createBrowserRouter(routes)} fallbackElement={
+        <RouterProvider router={createBrowserRouter(routes, { basename: import.meta.env.BASE_URL })} fallbackElement={
           <div>
             Loading
           </div>
