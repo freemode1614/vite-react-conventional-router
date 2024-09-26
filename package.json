@@ -12,7 +12,8 @@
     "build": "cross-env NODE_ENV=production tsup",
     "e2e": "playwright test",
     "test": "vitest --watch=false",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "prepublishOnly": "pnpm e2e && pnpm test && pnpm build"
   },
   "keywords": [],
   "author": "wp.l",
