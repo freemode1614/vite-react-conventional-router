@@ -60,11 +60,13 @@ test.describe("react e2e test", () => {
   test("go to '/page4/list'", async () => {
     await page.goto(`http://127.0.0.1:${port}/page4/list`);
     await expect(page.getByText("page4.list.tsx")).toBeVisible();
+    await expect(page.getByText("PageFourListLayout")).toBeVisible();
   });
 
   test("go to '/page4/list/:id'", async () => {
     await page.goto(`http://127.0.0.1:${port}/page4/list/15`);
     await expect(page.getByText("page4.list.15.tsx")).toBeVisible();
+    await expect(page.getByText("PageFourListLayout")).toBeVisible();
   });
 
   test("go to '/page5/15'", async () => {
