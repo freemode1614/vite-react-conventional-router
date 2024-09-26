@@ -1,8 +1,9 @@
 import nodepath from "node:path";
 
+import { createFilter } from "@rollup/pluginutils";
 import fg, { Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
-import { type Plugin } from "vite";
+import { type Plugin, ViteDevServer } from "vite";
 
 const PLUGIN_NAME = "vite-plugin-conventional-router";
 const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
@@ -16,7 +17,8 @@ const OPTIONAL_ROUTE_FLAG = "$",
   DYNAMIC_ROUTE_FLAG = "@";
 
 type ConventionalRouterProps = {
-  pages: Pattern | Pattern[];
+  include: Pattern | Pattern[];
+  exclude: Pattern | Pattern[];
 };
 
 export const deepCopy = <T = unknown>(data: T): T => JSON.parse(JSON.stringify(data));
@@ -58,12 +60,14 @@ export const filePathToRoutePath = (filepath: string) => {
 /**
  * Collect files from FS by fast-glob.
  */
-export const collectRoutePages = (pages: Pattern[]): NonIndexRouteObject[] => {
+export const collectRoutePages = (pages: Pattern[], ignore: Pattern[]): NonIndexRouteObject[] => {
   const pageModules: string[] = [];
   let routes: string[] = [];
 
   for (const pattern of pages) {
-    let files = fg.sync(pattern, { deep: Infinity }).map((file) => file.split("/"));
+    let files = fg
+      .sync(pattern, { deep: Infinity, ignore: ["node_modules/**", ...(ignore ?? [])] })
+      .map((file) => file.split("/"));
 
     for (const file of files) {
       pageModules.push(nodepath.resolve(file.join("/")));
@@ -201,43 +205,50 @@ export const arrangeRoutes = (
  */
 export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
   const code = routes
-    .map(
-      (route) => `{
+    .map((route) => {
+      const errorBoundary = route.ErrorBoundary
+        ? [
+            `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}")`,
+            `ErrorBoundary = ErrorBoundary_;`,
+          ].join(";")
+        : "";
+
+      return `{
         async lazy(){
           const { default: Component, ...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;
-          ${route.ErrorBoundary
-          ? `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}");
-            ErrorBoundary = ErrorBoundary_;
-          `
-          : ""
-        }
+          ${errorBoundary}
           return {
             ...rest, ErrorBoundary, Component,
           }
         },
         path: "${route.path}",
         children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[])}
-      }`,
-    )
+      }`;
+    })
     .join(",");
 
   return `[${code}]`;
 };
 
 export default function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin {
-  if (!options) {
-    options = { pages: [] };
-  }
+  options = { include: [], exclude: [], ...(options ?? {}) };
 
-  let { pages = [] } = options;
+  let { include } = options;
+  let { exclude } = options;
 
-  if (!Array.isArray(pages)) {
-    pages = [pages];
-  }
+  const filter = createFilter(include, exclude);
+
+  include = (Array.isArray(include) ? include : [include]) as string[];
+  exclude = (Array.isArray(exclude) ? exclude : [exclude]) as string[];
+
+  let devServer: ViteDevServer;
 
   return {
     name: PLUGIN_NAME,
+    configureServer(server) {
+      devServer = server;
+    },
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
         return source;
@@ -247,7 +258,7 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        const routes = collectRoutePages(pages);
+        const routes = collectRoutePages(include, exclude);
         const subRoutesPathAppendToParent: string[] = [];
 
         /**
@@ -332,11 +343,16 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
           const routes = ${stringifyRoutes(finalRoutes)};
           console.log(routes);
           export default routes;
-`,
+          `,
         };
       }
 
       return null;
+    },
+    watchChange(id, change) {
+      if ((filter(id) && change.event === "create") || change.event === "delete") {
+        devServer.restart();
+      }
     },
   };
 }

@@ -3,7 +3,8 @@ import { NonIndexRouteObject } from 'react-router';
 import { Plugin } from 'vite';
 
 type ConventionalRouterProps = {
-    pages: Pattern | Pattern[];
+    include: Pattern | Pattern[];
+    exclude: Pattern | Pattern[];
 };
 declare const deepCopy: <T = unknown>(data: T) => T;
 /**
@@ -17,7 +18,7 @@ declare const filePathToRoutePath: (filepath: string) => string;
 /**
  * Collect files from FS by fast-glob.
  */
-declare const collectRoutePages: (pages: Pattern[]) => NonIndexRouteObject[];
+declare const collectRoutePages: (pages: Pattern[], ignore: Pattern[]) => NonIndexRouteObject[];
 /**
  * Sub-path evaluation.
  */

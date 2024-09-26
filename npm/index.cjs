@@ -3,6 +3,7 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 var nodepath = require('path');
+var pluginutils = require('@rollup/pluginutils');
 var fg = require('fast-glob');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
@@ -37,11 +38,11 @@ var filePathToRoutePath = (filepath) => {
     return seg;
   }).join("/");
 };
-var collectRoutePages = (pages) => {
+var collectRoutePages = (pages, ignore) => {
   const pageModules = [];
   let routes = [];
   for (const pattern of pages) {
-    let files = fg__default.default.sync(pattern, { deep: Infinity }).map((file) => file.split("/"));
+    let files = fg__default.default.sync(pattern, { deep: Infinity, ignore: ["node_modules/**", ...ignore ?? []] }).map((file) => file.split("/"));
     for (const file of files) {
       pageModules.push(nodepath__default.default.resolve(file.join("/")));
     }
@@ -117,34 +118,39 @@ var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent, layoutAndError
   return parent;
 };
 var stringifyRoutes = (routes) => {
-  const code = routes.map(
-    (route) => `{
+  const code = routes.map((route) => {
+    const errorBoundary = route.ErrorBoundary ? [
+      `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}")`,
+      `ErrorBoundary = ErrorBoundary_;`
+    ].join(";") : "";
+    return `{
         async lazy(){
           const { default: Component, ...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;
-          ${route.ErrorBoundary ? `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}");
-            ErrorBoundary = ErrorBoundary_;
-          ` : ""}
+          ${errorBoundary}
           return {
             ...rest, ErrorBoundary, Component,
           }
         },
         path: "${route.path}",
         children: ${!route.children ? "[]" : stringifyRoutes(route.children)}
-      }`
-  ).join(",");
+      }`;
+  }).join(",");
   return `[${code}]`;
 };
 function ConventionalRouter(options) {
-  if (!options) {
-    options = { pages: [] };
-  }
-  let { pages = [] } = options;
-  if (!Array.isArray(pages)) {
-    pages = [pages];
-  }
+  options = { include: [], exclude: [], ...options ?? {} };
+  let { include } = options;
+  let { exclude } = options;
+  const filter = pluginutils.createFilter(include, exclude);
+  include = Array.isArray(include) ? include : [include];
+  exclude = Array.isArray(exclude) ? exclude : [exclude];
+  let devServer;
   return {
     name: PLUGIN_NAME,
+    configureServer(server) {
+      devServer = server;
+    },
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
         return source;
@@ -153,7 +159,7 @@ function ConventionalRouter(options) {
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        const routes = collectRoutePages(pages);
+        const routes = collectRoutePages(include, exclude);
         const subRoutesPathAppendToParent = [];
         const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
         const rootLayoutRoute = routes.find((route) => route.path === LAYOUT_FILE_NAME);
@@ -203,10 +209,15 @@ function ConventionalRouter(options) {
           const routes = ${stringifyRoutes(finalRoutes)};
           console.log(routes);
           export default routes;
-`
+          `
         };
       }
       return null;
+    },
+    watchChange(id, change) {
+      if (filter(id) && change.event === "create" || change.event === "delete") {
+        devServer.restart();
+      }
     }
   };
 }

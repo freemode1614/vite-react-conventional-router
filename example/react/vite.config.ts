@@ -8,7 +8,8 @@ export default defineConfig({
     react(), 
     // @ts-expect-error No Error
     conventionalRouter({
-      pages: ["src/pages/**"]
+      include: ["src/pages/**"],
+      exclude: ["src/**/components/**","src/**/hooks/**"]
     })
   ],
 })

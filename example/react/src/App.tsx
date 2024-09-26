@@ -8,7 +8,7 @@ function App() {
       <div className="pages">
         <RouterProvider router={createBrowserRouter(routes)} fallbackElement={
           <div>
-            Loading
+            Loading...
           </div>
         } />
       </div>

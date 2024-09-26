@@ -30,6 +30,7 @@
     }
   },
   "dependencies": {
+    "@rollup/pluginutils": "^5.1.2",
     "debug": "^4.3.7",
     "fast-glob": "^3.3.2",
     "glob-to-regexp": "^0.4.1"
