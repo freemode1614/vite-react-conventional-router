@@ -33,7 +33,10 @@ var collectRoutePages = (pages, ignore) => {
   const pageModules = [];
   let routes = [];
   for (const pattern of pages) {
-    let files = fg.sync(pattern, { deep: Infinity, ignore: ["node_modules/**", ...ignore ?? []] }).map((file) => file.split("/"));
+    let files = fg.sync(pattern, {
+      deep: Infinity,
+      ignore: ["node_modules/**", ...ignore ?? []]
+    }).map((file) => file.split("/"));
     for (const file of files) {
       pageModules.push(nodepath.resolve(file.join("/")));
     }
@@ -67,7 +70,9 @@ var isLayoutFilePath = (filepath) => {
 };
 var isLayoutRoute = (route, layoutRoute) => {
   if (nodepath.dirname(route.element) === nodepath.dirname(layoutRoute.element)) {
-    const condition1 = isLayoutFilePath(nodepath.basename(layoutRoute.element));
+    const condition1 = isLayoutFilePath(
+      nodepath.basename(layoutRoute.element)
+    );
     return condition1 && layoutRoute.path.split("/").length - route.path.split("/").length === 1;
   }
   return false;
@@ -79,7 +84,9 @@ var isErrorBoundaryFilePath = (filepath) => {
 };
 var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
   if (nodepath.dirname(route.element) === nodepath.dirname(errorBoundaryRoute.element)) {
-    const condition1 = isErrorBoundaryFilePath(nodepath.basename(errorBoundaryRoute.element));
+    const condition1 = isErrorBoundaryFilePath(
+      nodepath.basename(errorBoundaryRoute.element)
+    );
     if (route.path.split("/").length === 1 && route.path === "") {
       return condition1;
     }
@@ -89,12 +96,23 @@ var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
 };
 var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent, layoutAndErrorBoundaries = []) => {
   const subs = routes.filter((route) => isSubPath(parent.path, route.path));
-  const layout = layoutAndErrorBoundaries.find((route) => isLayoutRoute(parent, route));
-  const errorBoundary = layoutAndErrorBoundaries.find((route) => isErrorBoundaryRoute(parent, route));
+  const layout = layoutAndErrorBoundaries.find(
+    (route) => isLayoutRoute(parent, route)
+  );
+  const errorBoundary = layoutAndErrorBoundaries.find(
+    (route) => isErrorBoundaryRoute(parent, route)
+  );
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
   Object.assign(parent, {
     path: "/" + parent.path,
-    children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent, layoutAndErrorBoundaries)),
+    children: subs.map(
+      (sub) => arrangeRoutes(
+        routes,
+        sub,
+        subRoutesPathAppendToParent,
+        layoutAndErrorBoundaries
+      )
+    ),
     ErrorBoundary: errorBoundary ? errorBoundary.element : void 0
   });
   if (layout) {
@@ -152,15 +170,23 @@ function ConventionalRouter(options) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const routes = collectRoutePages(include, exclude);
         const subRoutesPathAppendToParent = [];
-        const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
-        const rootLayoutRoute = routes.find((route) => route.path === LAYOUT_FILE_NAME);
+        const notFoundRoute = routes.find(
+          (route) => route.path === NOT_FOUND_FILE_NAME
+        );
+        const rootLayoutRoute = routes.find(
+          (route) => route.path === LAYOUT_FILE_NAME
+        );
         const layoutsAndErrorBoundaries = routes.filter((route) => {
-          return (isLayoutFilePath(nodepath.basename(route.element)) || isErrorBoundaryFilePath(nodepath.basename(route.element))) && route.path !== rootLayoutRoute?.path;
+          return (isLayoutFilePath(nodepath.basename(route.element)) || isErrorBoundaryFilePath(
+            nodepath.basename(route.element)
+          )) && route.path !== rootLayoutRoute?.path;
         });
         if (notFoundRoute) {
           subRoutesPathAppendToParent.push(`/${notFoundRoute.path}`);
         }
-        const layoutsAndErrorBoundariesElements = new Set(layoutsAndErrorBoundaries.map((route) => route.element));
+        const layoutsAndErrorBoundariesElements = new Set(
+          layoutsAndErrorBoundaries.map((route) => route.element)
+        );
         const routesReadyToArrange = routes.filter(
           (r) => !layoutsAndErrorBoundariesElements.has(r.element) && r.element !== notFoundRoute?.element && r.element !== rootLayoutRoute?.element
         );
@@ -175,12 +201,24 @@ function ConventionalRouter(options) {
           }
         };
         routesReadyToArrange.filter((r) => r.path.split("/").length === 1).forEach(
-          (route) => arrangeRoutes(routesReadyToArrange, route, subRoutesPathAppendToParent, layoutsAndErrorBoundaries)
+          (route) => arrangeRoutes(
+            routesReadyToArrange,
+            route,
+            subRoutesPathAppendToParent,
+            layoutsAndErrorBoundaries
+          )
         );
-        const intermediaRoutes = routesReadyToArrange.filter((r) => !subRoutesPathAppendToParent.includes(r.path));
+        const intermediaRoutes = routesReadyToArrange.filter(
+          (r) => !subRoutesPathAppendToParent.includes(r.path)
+        );
         subRoutesPathAppendToParent.length = 0;
         intermediaRoutes.filter((r) => r.path.split("/").length > 2).forEach(
-          (route) => arrangeRoutes(intermediaRoutes, route, subRoutesPathAppendToParent, layoutsAndErrorBoundaries)
+          (route) => arrangeRoutes(
+            intermediaRoutes,
+            route,
+            subRoutesPathAppendToParent,
+            layoutsAndErrorBoundaries
+          )
         );
         let finalRoutes = intermediaRoutes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(mapCallback);
         if (rootLayoutRoute) {

@@ -21,7 +21,8 @@ type ConventionalRouterProps = {
   exclude: Pattern | Pattern[];
 };
 
-export const deepCopy = <T = unknown>(data: T): T => JSON.parse(JSON.stringify(data));
+export const deepCopy = <T = unknown>(data: T): T =>
+  JSON.parse(JSON.stringify(data));
 
 /**
  * Strp slash before and after.
@@ -34,7 +35,9 @@ export const stripSlash = (filepath: string) => {
  * Route path generate by file path.
  */
 export const filePathToRoutePath = (filepath: string) => {
-  filepath = filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") + nodepath.extname(filepath);
+  filepath =
+    filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") +
+    nodepath.extname(filepath);
 
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
     ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
@@ -48,7 +51,8 @@ export const filePathToRoutePath = (filepath: string) => {
       }
 
       if (seg.startsWith(OPTIONAL_ROUTE_FLAG)) {
-        const [, p] = new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
+        const [, p] =
+          new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
         return p ? `:${p}?` : seg;
       }
 
@@ -60,13 +64,19 @@ export const filePathToRoutePath = (filepath: string) => {
 /**
  * Collect files from FS by fast-glob.
  */
-export const collectRoutePages = (pages: Pattern[], ignore: Pattern[]): NonIndexRouteObject[] => {
+export const collectRoutePages = (
+  pages: Pattern[],
+  ignore: Pattern[],
+): NonIndexRouteObject[] => {
   const pageModules: string[] = [];
   let routes: string[] = [];
 
   for (const pattern of pages) {
     let files = fg
-      .sync(pattern, { deep: Infinity, ignore: ["node_modules/**", ...(ignore ?? [])] })
+      .sync(pattern, {
+        deep: Infinity,
+        ignore: ["node_modules/**", ...(ignore ?? [])],
+      })
       .map((file) => file.split("/"));
 
     for (const file of files) {
@@ -127,10 +137,21 @@ export const isLayoutFilePath = (filepath: string) => {
  * xx/xx.tsx
  * xx/xx.layout.tsx
  */
-export const isLayoutRoute = (route: NonIndexRouteObject, layoutRoute: NonIndexRouteObject) => {
-  if (nodepath.dirname(route.element! as string) === nodepath.dirname(layoutRoute.element! as string)) {
-    const condition1 = isLayoutFilePath(nodepath.basename(layoutRoute.element! as string));
-    return condition1 && layoutRoute.path!.split("/").length - route.path!.split("/").length === 1;
+export const isLayoutRoute = (
+  route: NonIndexRouteObject,
+  layoutRoute: NonIndexRouteObject,
+) => {
+  if (
+    nodepath.dirname(route.element! as string) ===
+    nodepath.dirname(layoutRoute.element! as string)
+  ) {
+    const condition1 = isLayoutFilePath(
+      nodepath.basename(layoutRoute.element! as string),
+    );
+    return (
+      condition1 &&
+      layoutRoute.path!.split("/").length - route.path!.split("/").length === 1
+    );
   }
 
   return false;
@@ -154,13 +175,26 @@ export const isErrorBoundaryFilePath = (filepath: string) => {
  * xx/xx.errorBoundary.tsx
  *
  */
-export const isErrorBoundaryRoute = (route: NonIndexRouteObject, errorBoundaryRoute: NonIndexRouteObject) => {
-  if (nodepath.dirname(route.element! as string) === nodepath.dirname(errorBoundaryRoute.element! as string)) {
-    const condition1 = isErrorBoundaryFilePath(nodepath.basename(errorBoundaryRoute.element! as string));
+export const isErrorBoundaryRoute = (
+  route: NonIndexRouteObject,
+  errorBoundaryRoute: NonIndexRouteObject,
+) => {
+  if (
+    nodepath.dirname(route.element! as string) ===
+    nodepath.dirname(errorBoundaryRoute.element! as string)
+  ) {
+    const condition1 = isErrorBoundaryFilePath(
+      nodepath.basename(errorBoundaryRoute.element! as string),
+    );
     if (route.path!.split("/").length === 1 && route.path === "") {
       return condition1;
     }
-    return condition1 && errorBoundaryRoute.path!.split("/").length - route.path!.split("/").length === 1;
+    return (
+      condition1 &&
+      errorBoundaryRoute.path!.split("/").length -
+        route.path!.split("/").length ===
+        1
+    );
   }
 
   return false;
@@ -176,14 +210,25 @@ export const arrangeRoutes = (
   layoutAndErrorBoundaries: NonIndexRouteObject[] = [],
 ): NonIndexRouteObject => {
   const subs = routes.filter((route) => isSubPath(parent.path!, route.path!));
-  const layout = layoutAndErrorBoundaries.find((route) => isLayoutRoute(parent, route));
-  const errorBoundary = layoutAndErrorBoundaries.find((route) => isErrorBoundaryRoute(parent, route));
+  const layout = layoutAndErrorBoundaries.find((route) =>
+    isLayoutRoute(parent, route),
+  );
+  const errorBoundary = layoutAndErrorBoundaries.find((route) =>
+    isErrorBoundaryRoute(parent, route),
+  );
 
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path!));
 
   Object.assign(parent, {
     path: "/" + parent.path!,
-    children: subs.map((sub) => arrangeRoutes(routes, sub, subRoutesPathAppendToParent, layoutAndErrorBoundaries)),
+    children: subs.map((sub) =>
+      arrangeRoutes(
+        routes,
+        sub,
+        subRoutesPathAppendToParent,
+        layoutAndErrorBoundaries,
+      ),
+    ),
     ErrorBoundary: errorBoundary ? errorBoundary.element! : undefined,
   });
 
@@ -231,7 +276,9 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
   return `[${code}]`;
 };
 
-export default function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin {
+export default function ConventionalRouter(
+  options?: Partial<ConventionalRouterProps>,
+): Plugin {
   options = { include: [], exclude: [], ...(options ?? {}) };
 
   let { include } = options;
@@ -264,13 +311,19 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
         /**
          * Only need one not found fallback
          */
-        const notFoundRoute = routes.find((route) => route.path === NOT_FOUND_FILE_NAME);
-        const rootLayoutRoute = routes.find((route) => route.path === LAYOUT_FILE_NAME);
+        const notFoundRoute = routes.find(
+          (route) => route.path === NOT_FOUND_FILE_NAME,
+        );
+        const rootLayoutRoute = routes.find(
+          (route) => route.path === LAYOUT_FILE_NAME,
+        );
 
         const layoutsAndErrorBoundaries = routes.filter((route) => {
           return (
             (isLayoutFilePath(nodepath.basename(route.element! as string)) ||
-              isErrorBoundaryFilePath(nodepath.basename(route.element! as string))) &&
+              isErrorBoundaryFilePath(
+                nodepath.basename(route.element! as string),
+              )) &&
             route.path !== rootLayoutRoute?.path
           );
         });
@@ -279,7 +332,9 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
           subRoutesPathAppendToParent.push(`/${notFoundRoute.path!}`);
         }
 
-        const layoutsAndErrorBoundariesElements = new Set(layoutsAndErrorBoundaries.map((route) => route.element));
+        const layoutsAndErrorBoundariesElements = new Set(
+          layoutsAndErrorBoundaries.map((route) => route.element),
+        );
 
         const routesReadyToArrange = routes.filter(
           (r) =>
@@ -304,11 +359,18 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
           .filter((r) => r.path!.split("/").length === 1)
           // Start arrange
           .forEach((route) =>
-            arrangeRoutes(routesReadyToArrange, route, subRoutesPathAppendToParent, layoutsAndErrorBoundaries),
+            arrangeRoutes(
+              routesReadyToArrange,
+              route,
+              subRoutesPathAppendToParent,
+              layoutsAndErrorBoundaries,
+            ),
           );
 
         // Remove all sub routes.
-        const intermediaRoutes = routesReadyToArrange.filter((r) => !subRoutesPathAppendToParent.includes(r.path!));
+        const intermediaRoutes = routesReadyToArrange.filter(
+          (r) => !subRoutesPathAppendToParent.includes(r.path!),
+        );
 
         subRoutesPathAppendToParent.length = 0;
 
@@ -317,7 +379,12 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
           .filter((r) => r.path!.split("/").length > 2)
           // Start arrange
           .forEach((route) =>
-            arrangeRoutes(intermediaRoutes, route, subRoutesPathAppendToParent, layoutsAndErrorBoundaries),
+            arrangeRoutes(
+              intermediaRoutes,
+              route,
+              subRoutesPathAppendToParent,
+              layoutsAndErrorBoundaries,
+            ),
           );
 
         let finalRoutes = intermediaRoutes
@@ -350,7 +417,10 @@ export default function ConventionalRouter(options?: Partial<ConventionalRouterP
       return null;
     },
     watchChange(id, change) {
-      if ((filter(id) && change.event === "create") || change.event === "delete") {
+      if (
+        (filter(id) && change.event === "create") ||
+        change.event === "delete"
+      ) {
         devServer.restart();
       }
     },
