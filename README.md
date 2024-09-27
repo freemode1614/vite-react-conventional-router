@@ -1,5 +1,9 @@
 # @moccona/vite-plugin-react-conventional-router
 
+## ⚠️注意⚠️
+
+这个库只基于*react-router*实现。其他的路由库暂时不支持，比如*@tanstack/react-router*
+
 ## 安装与配置
 
 - 安装
@@ -21,7 +25,8 @@ export default defineConfig({
   plugins: [
     react(),
     conventionalRouter({
-      pages: ["src/pages/**"]
+      include: ["src/pages/**"],
+      exclude: ["src/**/components/**","src/**/hooks/**"]
     }),
   ],
 })
@@ -29,7 +34,7 @@ export default defineConfig({
 //
 ```
 
-- 添加虚拟模块类型定义文件到 tsconfig.json
+- 添加虚拟模块类型定义文件到 tsconfig.json， 避免导入路有配置的时候报 "module not found" 的错误。
 
 ```ts
 {
@@ -55,9 +60,9 @@ export default function App() {
 }
 ```
 
-## 支持的文件名与路由的映射
+## 文件名与路由的映射关系
 
-```
+```txt
 `src/pages/index.tsx`           -> `/`
 `src/pages/home.tsx`            -> `/home`
 `src/pages/home.list.tsx`       -> `/home/list`
@@ -67,4 +72,4 @@ export default function App() {
 
 ## 如何组织页面文件内容
 
-文件内容组织参考 react-router 的 [**lazy**](https://reactrouter.com/en/main/route/lazy#lazy) 部分。
+文件内容组织参考 react-router 的 [**lazy**](https://reactrouter.com/en/main/route/lazy#lazy) 部分。唯一不同的是，默认到处会作为*Component*被使用。

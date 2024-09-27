@@ -5,11 +5,11 @@ import conventionalRouter from "@moccona/vite-plugin-react-conventional-router"
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(), 
+    react(),
     // @ts-expect-error No Error
     conventionalRouter({
       include: ["src/pages/**"],
-      exclude: ["src/**/components/**","src/**/hooks/**"]
+      exclude: ["src/**/components/**", "src/**/hooks/**"]
     })
   ],
 })

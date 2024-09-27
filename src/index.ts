@@ -408,7 +408,9 @@ export default function ConventionalRouter(
         return {
           code: `
           const routes = ${stringifyRoutes(finalRoutes)};
-          console.log(routes);
+          if(import.meta.env.DEV) {
+            console.log(routes);
+          }
           export default routes;
           `,
         };
