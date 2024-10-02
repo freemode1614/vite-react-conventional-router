@@ -2,11 +2,17 @@
 
 ## ⚠️注意⚠️
 
-这个库只基于*react-router*实现。其他的路由库暂时不支持，比如*@tanstack/react-router*
+这个库只基于*react-router*实现。其他的路由库暂时不支持，比如 *@tanstack/react-router*
 
 ## 安装与配置
 
-- 安装
+- 先安装 *react-router* 和 *react-router-dom*
+
+```sh
+npm i react-router react-router-dom
+```
+
+- 安装插件
 
 ```sh
 npm i @moccona/vite-plugin-react-conventional-router -D
@@ -38,8 +44,11 @@ export default defineConfig({
 
 ```ts
 {
-    //...
-    "include": ["src", "./node_modules/@moccona/vite-react-conventional-router/client.d.ts"]
+  //...
+  "include": [
+    "src",
+    "./node_modules/@moccona/vite-react-conventional-router/client.d.ts"
+  ]
 }
 ```
 
@@ -50,13 +59,16 @@ import routes from "virtual:routes"
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 export default function App() {
-    return <div id="main">
-        <RouterProvider router={createBrowserRouter(routes)} fallbackElement={
-          <div>
-              Loading
-          </div>
-        } />
-    </div>
+  return <div id="main">
+    <RouterProvider
+      router={createBrowserRouter(routes)}
+      fallbackElement={
+        <div>
+          Loading
+        </div>
+      }
+    />
+  </div>
 }
 ```
 
