@@ -1,11 +1,19 @@
-import { Browser, BrowserContext, chromium, expect, Page, test } from "@playwright/test";
+import {
+  Browser,
+  BrowserContext,
+  chromium,
+  expect,
+  Page,
+  test,
+} from "@playwright/test";
+
+const port = 5173;
 
 test.describe("react e2e test", () => {
   // let devServer: ViteDevServer;
   let browser: Browser;
   let page: Page;
   let context: BrowserContext;
-  const port = 5173;
 
   test.beforeAll(async () => {
     browser = await chromium.launch();
@@ -44,12 +52,16 @@ test.describe("react e2e test", () => {
 
   test("go to '/page2/page2-1/page2-1-1'", async () => {
     await page.goto(`http://127.0.0.1:${port}/page2/page2-1/page2-1-1`);
-    await expect(page.getByText("page2/page2-1/page2-1-1/index.tsx")).toBeVisible();
+    await expect(
+      page.getByText("page2/page2-1/page2-1-1/index.tsx"),
+    ).toBeVisible();
   });
 
   test("go to '/page3/page3-1/page3-1-1'", async () => {
     await page.goto(`http://127.0.0.1:${port}/page3/page3-1/page3-1-1`);
-    await expect(page.getByText("page3/page3-1/page3-1-1/index.tsx")).toBeVisible();
+    await expect(
+      page.getByText("page3/page3-1/page3-1-1/index.tsx"),
+    ).toBeVisible();
   });
 
   test("go to '/page4'", async () => {
