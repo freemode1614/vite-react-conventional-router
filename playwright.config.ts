@@ -68,7 +68,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: "cd example/react && npx vite -- test",
-    url: "http://127.0.0.1:5173",
+    url: "http://localhost:8888",
     reuseExistingServer: !process.env.CI,
     timeout: 10 * 1000,
   },
