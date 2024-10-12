@@ -10,12 +10,11 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsup --watch",
     "build": "cross-env NODE_ENV=production tsup",
-    "e2e": "pnpm build && pnpm pree2e && playwright test",
-    "test": "pnpm build && vitest --watch=false",
-    "coverage": "pnpm build && vitest run --coverage",
+    "e2e": "pnpm pree2e && playwright test",
+    "test": "vitest --watch=false",
+    "coverage": "vitest run --coverage",
     "prepublishOnly": "pnpm e2e && pnpm test && pnpm build",
-    "pree2e": "pnpm exec playwright install",
-    "publish": "pnpm prepublishOnly && changeset publish"
+    "pree2e": "pnpm exec playwright install"
   },
   "keywords": [
     "vite-react",
