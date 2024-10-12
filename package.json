@@ -14,7 +14,8 @@
     "test": "pnpm build && vitest --watch=false",
     "coverage": "pnpm build && vitest run --coverage",
     "prepublishOnly": "pnpm e2e && pnpm test && pnpm build",
-    "pree2e": "pnpm exec playwright install"
+    "pree2e": "pnpm exec playwright install",
+    "publish": "pnpm prepublishOnly && changeset publish"
   },
   "keywords": [
     "vite-react",
