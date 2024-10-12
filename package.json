@@ -1,6 +1,6 @@
 {
   "name": "@moccona/vite-plugin-react-conventional-router",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Vite plugin for react conventional router",
   "type": "module",
   "publishConfig": {
