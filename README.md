@@ -42,7 +42,7 @@ export default defineConfig({
 //
 ```
 
-- 添加虚拟模块类型定义文件到 _tsconfig.json_ ， 避免导入路有配置的时候报 _MODULE NOT FOUND_ 的错误。
+- 添加虚拟路由模块类型定义文件到 _tsconfig.json_ ， 避免导入路有配置的时候报 _MODULE NOT FOUND_ 的错误。
 
 ```ts
 {

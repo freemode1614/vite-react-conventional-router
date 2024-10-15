@@ -120,6 +120,9 @@ export const isSubPath = (parentPath: string, subPath: string) => {
   return false;
 };
 
+/**
+ * Layout file evaluation.
+ */
 export const isLayoutFilePath = (filepath: string) => {
   return new RegExp(
     `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${LAYOUT_FILE_NAME})(\\.tsx)$`,
