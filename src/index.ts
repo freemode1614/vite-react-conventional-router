@@ -5,18 +5,17 @@ import fg, { Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
 import { type Plugin, ViteDevServer } from "vite";
 
-import { DEFAULT_IGNORE_PATTERN } from "./constants";
-
-const PLUGIN_NAME = "vite-plugin-conventional-router";
-const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
-const PLUGIN_MAIN_PAGE_FILE = "index.tsx";
-
-const LAYOUT_FILE_NAME = "layout",
-  NOT_FOUND_FILE_NAME = "404",
-  ERROR_BOUNDARY_FILE_NAME = "errorBoundary";
-
-const OPTIONAL_ROUTE_FLAG = "$",
-  DYNAMIC_ROUTE_FLAG = "@";
+import {
+  DEFAULT_IGNORE_PATTERN,
+  DYNAMIC_ROUTE_FLAG,
+  ERROR_BOUNDARY_FILE_NAME,
+  LAYOUT_FILE_NAME,
+  NOT_FOUND_FILE_NAME,
+  OPTIONAL_ROUTE_FLAG,
+  PLUGIN_MAIN_PAGE_FILE,
+  PLUGIN_NAME,
+  PLUGIN_VIRTUAL_MODULE_NAME,
+} from "./constants";
 
 type ConventionalRouterProps = {
   include: Pattern | Pattern[];
