@@ -12,6 +12,11 @@ var nodepath__default = /*#__PURE__*/_interopDefault(nodepath);
 var fg__default = /*#__PURE__*/_interopDefault(fg);
 
 // src/index.ts
+
+// src/constants.ts
+var DEFAULT_IGNORE_PATTERN = ["node_modules/**"];
+
+// src/index.ts
 var PLUGIN_NAME = "vite-plugin-conventional-router";
 var PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 var PLUGIN_MAIN_PAGE_FILE = "index.tsx";
@@ -44,7 +49,7 @@ var collectRoutePages = (pages, ignore) => {
   for (const pattern of pages) {
     let files = fg__default.default.sync(pattern, {
       deep: Infinity,
-      ignore: ["node_modules/**", ...ignore ?? []]
+      ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore ?? []]
     }).map((file) => file.split("/"));
     for (const file of files) {
       pageModules.push(nodepath__default.default.resolve(file.join("/")));

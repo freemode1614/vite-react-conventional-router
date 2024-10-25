@@ -23,6 +23,9 @@ declare const collectRoutePages: (pages: Pattern[], ignore: Pattern[]) => NonInd
  * Sub-path evaluation.
  */
 declare const isSubPath: (parentPath: string, subPath: string) => boolean;
+/**
+ * Layout file evaluation.
+ */
 declare const isLayoutFilePath: (filepath: string) => boolean;
 /**
  *

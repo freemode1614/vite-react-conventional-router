@@ -5,6 +5,8 @@ import fg, { Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
 import { type Plugin, ViteDevServer } from "vite";
 
+import { DEFAULT_IGNORE_PATTERN } from "./constants";
+
 const PLUGIN_NAME = "vite-plugin-conventional-router";
 const PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 const PLUGIN_MAIN_PAGE_FILE = "index.tsx";
@@ -75,7 +77,7 @@ export const collectRoutePages = (
     let files = fg
       .sync(pattern, {
         deep: Infinity,
-        ignore: ["node_modules/**", ...(ignore ?? [])],
+        ignore: [...DEFAULT_IGNORE_PATTERN, ...(ignore ?? [])],
       })
       .map((file) => file.split("/"));
 
@@ -263,7 +265,7 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
 
       return `{
         async lazy(){
-          const { default: Component, ...rest }  = await import("${route.element}");
+          const { default: Component, initProps ,...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;
           ${errorBoundary}
           return {
