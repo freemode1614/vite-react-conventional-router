@@ -424,8 +424,8 @@ export default function ConventionalRouter(
     },
     watchChange(id, change) {
       if (
-        (filter(id) && change.event === "create") ||
-        change.event === "delete"
+        filter(id) &&
+        (change.event === "create" || change.event === "delete")
       ) {
         devServer.restart();
       }

@@ -1,8 +1,6 @@
 # @moccona/vite-plugin-react-conventional-router
 
-## ⚠️注意⚠️
-
-这个库只基于 _react-router_ 实现，与 _react-router_ 的功能高度集成。其他的路由库暂时不支持，比如 _@tanstack/react-router_
+> 这个库只基于 _react-router_ 实现，与 _react-router_ 的功能高度集成。其他的路由库暂时不支持，比如 _@tanstack/react-router_
 
 ## 安装与配置
 
@@ -24,7 +22,7 @@ npm i @moccona/vite-plugin-react-conventional-router -D
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import conventionalRouter from "@moccona/vite-react-conventional-router "
+import conventionalRouter from "@moccona/vite-plugin-react-conventional-router"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -49,7 +47,7 @@ export default defineConfig({
   //...
   "include": [
     "src",
-    "./node_modules/@moccona/vite-react-conventional-router/client.d.ts"
+    "./node_modules/@moccona/vite-plugin-react-conventional-router/client.d.ts"
   ]
 }
 ```
