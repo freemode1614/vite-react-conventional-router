@@ -231,12 +231,15 @@ var stringifyRoutes = (routes) => {
         `handle = handle_;`
       ].join(";")
     ].join("\n;") : "";
+    const loader = route.loader ? [
+      "async (...args) => {",
+      `const { default: loader_ } = await import("${route.loader}");`,
+      "return loader_(...args);",
+      "}"
+    ].join("\n") : "undefined";
     return `{
         path: "${route.path}",
-        loader: async (...args) => {
-          const { default: loader_ } = await import("${route.loader}");
-          return await loader_(...args);
-        },
+        loader: ${loader},
         async lazy(){
           const { default: Component, initProps ,...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;

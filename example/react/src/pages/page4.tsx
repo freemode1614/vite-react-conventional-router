@@ -8,7 +8,7 @@ export default function Component() {
   const nav = useNavigate();
   const { name } = useLoaderData() as { name: string };
   return <div>
-    <h1>{name}</h1>
+    <h1 role="alert">{name}</h1>
     <span role="heading"> page4.tsx </span>
     <button onClick={
       () => nav('list')
