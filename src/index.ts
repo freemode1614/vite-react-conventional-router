@@ -9,14 +9,19 @@ import {
   DEFAULT_IGNORE_PATTERN,
   DYNAMIC_ROUTE_FLAG,
   ERROR_BOUNDARY_FILE_NAME,
+  HANDLE_FILE_NAME,
   LAYOUT_FILE_NAME,
   LOADER_FILE_NAME,
-  NOT_FOUND_FILE_NAME,
   OPTIONAL_ROUTE_FLAG,
   PLUGIN_MAIN_PAGE_FILE,
   PLUGIN_NAME,
   PLUGIN_VIRTUAL_MODULE_NAME,
 } from "./constants";
+import {
+  collectRootRouteRelatedRoute,
+  collectRouteFieldKeyRoute,
+  isFieldKeyRoute,
+} from "./route";
 
 type ConventionalRouterProps = {
   include: Pattern | Pattern[];
@@ -266,21 +271,27 @@ export const arrangeRoutes = (
   const subs = routes.filter((route) => isSubPath(parent.path!, route.path!));
 
   const layout = layoutAndErrorBoundaries.find((route) =>
-    isLayoutRoute(parent, route),
+    isFieldKeyRoute(parent, route, LAYOUT_FILE_NAME),
   );
 
   const errorBoundary = layoutAndErrorBoundaries.find((route) =>
-    isErrorBoundaryRoute(parent, route),
+    isFieldKeyRoute(parent, route, ERROR_BOUNDARY_FILE_NAME),
   );
 
   const loader = layoutAndErrorBoundaries.find((route) =>
-    isLoaderRoute(parent, route),
+    isFieldKeyRoute(parent, route, LOADER_FILE_NAME),
+  );
+
+  const handle = layoutAndErrorBoundaries.find((route) =>
+    isFieldKeyRoute(parent, route, HANDLE_FILE_NAME),
   );
 
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path!));
 
   Object.assign(parent, {
     path: "/" + parent.path!,
+    loader: loader?.element,
+    handle: handle?.element,
     children: subs.map((sub) =>
       arrangeRoutes(
         routes,
@@ -290,7 +301,6 @@ export const arrangeRoutes = (
       ),
     ),
     ErrorBoundary: errorBoundary?.element,
-    loader: loader?.element,
   });
 
   if (layout) {
@@ -319,27 +329,32 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
           ].join("\n;")
         : "";
 
-      const loader = route.loader
+      const handle = route.handle
         ? [
             [
-              `const { default: loader_ } = await import("${route.loader}")`,
-              `loader = loader_;`,
+              `const { default: handle_ } = await import("${route.handle}")`,
+              `handle = handle_;`,
             ].join(";"),
           ].join("\n;")
         : "";
 
       return `{
+        path: "${route.path}",
+        loader: async (...args) => {
+          const { default: loader_ } = await import("${route.loader}");
+          return await loader_(...args);
+        },
         async lazy(){
           const { default: Component, initProps ,...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;
           let loader = undefined;
+          let handle = undefined;
           ${errorBoundary}
-          ${loader}
+          ${handle}
           return {
-            ...rest, ErrorBoundary, Component, loader
+            ...rest, handle, ErrorBoundary, Component
           }
         },
-        path: "${route.path}",
         children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[])}
       }`;
     })
@@ -377,31 +392,19 @@ export default function ConventionalRouter(
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        const routes = collectRoutePages(include, exclude);
+        const routes_ = collectRoutePages(include, exclude);
         const subRoutesPathAppendToParent: string[] = [];
 
         /**
          * Only need one not found fallback
          */
-        const notFoundRoute = routes.find(
-          (route) => route.path === NOT_FOUND_FILE_NAME,
-        );
 
-        const rootLayoutRoute = routes.find(
-          (route) => route.path === LAYOUT_FILE_NAME,
-        );
+        const [notFoundRoute, rootLayoutRoute, , routes] =
+          collectRootRouteRelatedRoute(routes_);
 
-        const layoutsAndErrorBoundaries = routes.filter((route) => {
-          return (
-            (isLayoutFilePath(nodepath.basename(route.element! as string)) ||
-              isErrorBoundaryFilePath(
-                nodepath.basename(route.element! as string),
-              ) ||
-              isLoaderFilePath(nodepath.basename(route.element! as string))) &&
-            route.path !== rootLayoutRoute?.path
-          );
-        });
+        const layoutsAndErrorBoundaries = collectRouteFieldKeyRoute(routes);
 
+        // 404 Page For Route.
         if (notFoundRoute) {
           subRoutesPathAppendToParent.push(`/${notFoundRoute.path!}`);
         }
@@ -411,10 +414,7 @@ export default function ConventionalRouter(
         );
 
         const routesReadyToArrange = routes.filter(
-          (r) =>
-            !layoutsAndErrorBoundariesElements.has(r.element!) &&
-            r.element !== notFoundRoute?.element &&
-            r.element !== rootLayoutRoute?.element,
+          (r) => !layoutsAndErrorBoundariesElements.has(r.element!),
         );
 
         const mapCallback = (r: NonIndexRouteObject) => {
