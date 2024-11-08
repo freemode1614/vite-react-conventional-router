@@ -6,8 +6,6 @@ import fg from 'fast-glob';
 
 // src/constants.ts
 var DEFAULT_IGNORE_PATTERN = ["node_modules/**"];
-
-// src/index.ts
 var PLUGIN_NAME = "vite-plugin-conventional-router";
 var PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
 var PLUGIN_MAIN_PAGE_FILE = "index.tsx";
@@ -16,6 +14,8 @@ var NOT_FOUND_FILE_NAME = "404";
 var ERROR_BOUNDARY_FILE_NAME = "errorBoundary";
 var OPTIONAL_ROUTE_FLAG = "$";
 var DYNAMIC_ROUTE_FLAG = "@";
+
+// src/index.ts
 var deepCopy = (data) => JSON.parse(JSON.stringify(data));
 var stripSlash = (filepath) => {
   return filepath.replace(/^\//, "").replace(/\/$/, "");
@@ -139,7 +139,7 @@ var stringifyRoutes = (routes) => {
     ].join(";") : "";
     return `{
         async lazy(){
-          const { default: Component, ...rest }  = await import("${route.element}");
+          const { default: Component, initProps ,...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;
           ${errorBoundary}
           return {
@@ -251,7 +251,7 @@ function ConventionalRouter(options) {
       return null;
     },
     watchChange(id, change) {
-      if (filter(id) && change.event === "create" || change.event === "delete") {
+      if (filter(id) && (change.event === "create" || change.event === "delete")) {
         devServer.restart();
       }
     }
