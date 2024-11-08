@@ -1,6 +1,4 @@
-import React from "react";
-import { useNavigate } from "react-router";
-import { useBeforeUnload } from "react-router-dom";
+import { useLoaderData, useNavigate } from "react-router";
 
 export const shouldValidate = false;
 
@@ -8,7 +6,9 @@ Component.displayName = 'index';
 
 export default function Component() {
   const nav = useNavigate();
+  const data = useLoaderData() as { name: string }
   return <div>
+    <h1>{data.name}</h1>
     <span role="heading">index.tsx</span><br />
     <button onClick={
       () => nav('page1')

@@ -10,6 +10,7 @@ import {
   DYNAMIC_ROUTE_FLAG,
   ERROR_BOUNDARY_FILE_NAME,
   LAYOUT_FILE_NAME,
+  LOADER_FILE_NAME,
   NOT_FOUND_FILE_NAME,
   OPTIONAL_ROUTE_FLAG,
   PLUGIN_MAIN_PAGE_FILE,
@@ -161,6 +162,11 @@ export const isLayoutRoute = (
   return false;
 };
 
+/**
+ *
+ * Valid error-boundary path
+ *
+ */
 export const isErrorBoundaryFilePath = (filepath: string) => {
   return new RegExp(
     `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${ERROR_BOUNDARY_FILE_NAME})(\\.tsx)$`,
@@ -205,6 +211,50 @@ export const isErrorBoundaryRoute = (
 };
 
 /**
+ *
+ * Valid loader path
+ *
+ */
+export const isLoaderFilePath = (filepath: string) => {
+  return new RegExp(
+    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${LOADER_FILE_NAME})(\\.tsx?)$`,
+  ).test(nodepath.basename(filepath));
+};
+
+/**
+ *
+ * Two possible scenario
+ * 1.
+ * xx/xx/loader.tsx
+ *
+ * 2.
+ * xx/xx.loader.tsx
+ *
+ */
+export const isLoaderRoute = (
+  route: NonIndexRouteObject,
+  loaderRoute: NonIndexRouteObject,
+) => {
+  if (
+    nodepath.dirname(route.element! as string) ===
+    nodepath.dirname(loaderRoute.element! as string)
+  ) {
+    const condition1 = isLoaderFilePath(
+      nodepath.basename(loaderRoute.element! as string),
+    );
+    if (route.path!.split("/").length === 1 && route.path === "") {
+      return condition1;
+    }
+    return (
+      condition1 &&
+      loaderRoute.path!.split("/").length - route.path!.split("/").length === 1
+    );
+  }
+
+  return false;
+};
+
+/**
  * Arrange routes.
  */
 export const arrangeRoutes = (
@@ -214,11 +264,17 @@ export const arrangeRoutes = (
   layoutAndErrorBoundaries: NonIndexRouteObject[] = [],
 ): NonIndexRouteObject => {
   const subs = routes.filter((route) => isSubPath(parent.path!, route.path!));
+
   const layout = layoutAndErrorBoundaries.find((route) =>
     isLayoutRoute(parent, route),
   );
+
   const errorBoundary = layoutAndErrorBoundaries.find((route) =>
     isErrorBoundaryRoute(parent, route),
+  );
+
+  const loader = layoutAndErrorBoundaries.find((route) =>
+    isLoaderRoute(parent, route),
   );
 
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path!));
@@ -233,7 +289,8 @@ export const arrangeRoutes = (
         layoutAndErrorBoundaries,
       ),
     ),
-    ErrorBoundary: errorBoundary ? errorBoundary.element! : undefined,
+    ErrorBoundary: errorBoundary?.element,
+    loader: loader?.element,
   });
 
   if (layout) {
@@ -259,16 +316,27 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
         ? [
             `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}")`,
             `ErrorBoundary = ErrorBoundary_;`,
-          ].join(";")
+          ].join("\n;")
+        : "";
+
+      const loader = route.loader
+        ? [
+            [
+              `const { default: loader_ } = await import("${route.loader}")`,
+              `loader = loader_;`,
+            ].join(";"),
+          ].join("\n;")
         : "";
 
       return `{
         async lazy(){
           const { default: Component, initProps ,...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;
+          let loader = undefined;
           ${errorBoundary}
+          ${loader}
           return {
-            ...rest, ErrorBoundary, Component,
+            ...rest, ErrorBoundary, Component, loader
           }
         },
         path: "${route.path}",
@@ -318,6 +386,7 @@ export default function ConventionalRouter(
         const notFoundRoute = routes.find(
           (route) => route.path === NOT_FOUND_FILE_NAME,
         );
+
         const rootLayoutRoute = routes.find(
           (route) => route.path === LAYOUT_FILE_NAME,
         );
@@ -327,7 +396,8 @@ export default function ConventionalRouter(
             (isLayoutFilePath(nodepath.basename(route.element! as string)) ||
               isErrorBoundaryFilePath(
                 nodepath.basename(route.element! as string),
-              )) &&
+              ) ||
+              isLoaderFilePath(nodepath.basename(route.element! as string))) &&
             route.path !== rootLayoutRoute?.path
           );
         });

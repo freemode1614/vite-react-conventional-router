@@ -39,6 +39,11 @@ declare const isLayoutFilePath: (filepath: string) => boolean;
  * xx/xx.layout.tsx
  */
 declare const isLayoutRoute: (route: NonIndexRouteObject, layoutRoute: NonIndexRouteObject) => boolean;
+/**
+ *
+ * Valid error-boundary path
+ *
+ */
 declare const isErrorBoundaryFilePath: (filepath: string) => boolean;
 /**
  *
@@ -54,6 +59,23 @@ declare const isErrorBoundaryFilePath: (filepath: string) => boolean;
  */
 declare const isErrorBoundaryRoute: (route: NonIndexRouteObject, errorBoundaryRoute: NonIndexRouteObject) => boolean;
 /**
+ *
+ * Valid loader path
+ *
+ */
+declare const isLoaderFilePath: (filepath: string) => boolean;
+/**
+ *
+ * Two possible scenario
+ * 1.
+ * xx/xx/loader.tsx
+ *
+ * 2.
+ * xx/xx.loader.tsx
+ *
+ */
+declare const isLoaderRoute: (route: NonIndexRouteObject, loaderRoute: NonIndexRouteObject) => boolean;
+/**
  * Arrange routes.
  */
 declare const arrangeRoutes: (routes: NonIndexRouteObject[], parent: NonIndexRouteObject, subRoutesPathAppendToParent: string[], layoutAndErrorBoundaries?: NonIndexRouteObject[]) => NonIndexRouteObject;
@@ -63,4 +85,4 @@ declare const arrangeRoutes: (routes: NonIndexRouteObject[], parent: NonIndexRou
 declare const stringifyRoutes: (routes: NonIndexRouteObject[]) => string;
 declare function ConventionalRouter(options?: Partial<ConventionalRouterProps>): Plugin;
 
-export { arrangeRoutes, collectRoutePages, deepCopy, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryFilePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isSubPath, stringifyRoutes, stripSlash };
+export { arrangeRoutes, collectRoutePages, deepCopy, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryFilePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isLoaderFilePath, isLoaderRoute, isSubPath, stringifyRoutes, stripSlash };

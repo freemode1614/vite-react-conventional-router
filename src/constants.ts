@@ -6,6 +6,7 @@ export const PLUGIN_MAIN_PAGE_FILE = "index.tsx";
 export const LAYOUT_FILE_NAME = "layout";
 export const NOT_FOUND_FILE_NAME = "404";
 export const ERROR_BOUNDARY_FILE_NAME = "errorBoundary";
+export const LOADER_FILE_NAME = "loader";
 
 export const OPTIONAL_ROUTE_FLAG = "$";
 export const DYNAMIC_ROUTE_FLAG = "@";

@@ -12,6 +12,7 @@ var PLUGIN_MAIN_PAGE_FILE = "index.tsx";
 var LAYOUT_FILE_NAME = "layout";
 var NOT_FOUND_FILE_NAME = "404";
 var ERROR_BOUNDARY_FILE_NAME = "errorBoundary";
+var LOADER_FILE_NAME = "loader";
 var OPTIONAL_ROUTE_FLAG = "$";
 var DYNAMIC_ROUTE_FLAG = "@";
 
@@ -99,6 +100,23 @@ var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
   }
   return false;
 };
+var isLoaderFilePath = (filepath) => {
+  return new RegExp(
+    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${LOADER_FILE_NAME})(\\.tsx?)$`
+  ).test(nodepath.basename(filepath));
+};
+var isLoaderRoute = (route, loaderRoute) => {
+  if (nodepath.dirname(route.element) === nodepath.dirname(loaderRoute.element)) {
+    const condition1 = isLoaderFilePath(
+      nodepath.basename(loaderRoute.element)
+    );
+    if (route.path.split("/").length === 1 && route.path === "") {
+      return condition1;
+    }
+    return condition1 && loaderRoute.path.split("/").length - route.path.split("/").length === 1;
+  }
+  return false;
+};
 var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent, layoutAndErrorBoundaries = []) => {
   const subs = routes.filter((route) => isSubPath(parent.path, route.path));
   const layout = layoutAndErrorBoundaries.find(
@@ -106,6 +124,9 @@ var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent, layoutAndError
   );
   const errorBoundary = layoutAndErrorBoundaries.find(
     (route) => isErrorBoundaryRoute(parent, route)
+  );
+  const loader = layoutAndErrorBoundaries.find(
+    (route) => isLoaderRoute(parent, route)
   );
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
   Object.assign(parent, {
@@ -118,7 +139,8 @@ var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent, layoutAndError
         layoutAndErrorBoundaries
       )
     ),
-    ErrorBoundary: errorBoundary ? errorBoundary.element : void 0
+    ErrorBoundary: errorBoundary?.element,
+    loader: loader?.element
   });
   if (layout) {
     const parentCopy = deepCopy(parent);
@@ -136,14 +158,22 @@ var stringifyRoutes = (routes) => {
     const errorBoundary = route.ErrorBoundary ? [
       `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}")`,
       `ErrorBoundary = ErrorBoundary_;`
-    ].join(";") : "";
+    ].join("\n;") : "";
+    const loader = route.loader ? [
+      [
+        `const { default: loader_ } = await import("${route.loader}")`,
+        `loader = loader_;`
+      ].join(";")
+    ].join("\n;") : "";
     return `{
         async lazy(){
           const { default: Component, initProps ,...rest }  = await import("${route.element}");
           let ErrorBoundary = undefined;
+          let loader = undefined;
           ${errorBoundary}
+          ${loader}
           return {
-            ...rest, ErrorBoundary, Component,
+            ...rest, ErrorBoundary, Component, loader
           }
         },
         path: "${route.path}",
@@ -184,7 +214,7 @@ function ConventionalRouter(options) {
         const layoutsAndErrorBoundaries = routes.filter((route) => {
           return (isLayoutFilePath(nodepath.basename(route.element)) || isErrorBoundaryFilePath(
             nodepath.basename(route.element)
-          )) && route.path !== rootLayoutRoute?.path;
+          ) || isLoaderFilePath(nodepath.basename(route.element))) && route.path !== rootLayoutRoute?.path;
         });
         if (notFoundRoute) {
           subRoutesPathAppendToParent.push(`/${notFoundRoute.path}`);
@@ -258,6 +288,6 @@ function ConventionalRouter(options) {
   };
 }
 
-export { arrangeRoutes, collectRoutePages, deepCopy, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryFilePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isSubPath, stringifyRoutes, stripSlash };
+export { arrangeRoutes, collectRoutePages, deepCopy, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryFilePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isLoaderFilePath, isLoaderRoute, isSubPath, stringifyRoutes, stripSlash };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map
