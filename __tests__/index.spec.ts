@@ -1,6 +1,11 @@
 import { describe, expect, test } from "vitest";
 
-import { arrangeRoutes, filePathToRoutePath, isSubPath, stripSlash } from "../src";
+import {
+  arrangeRoutes,
+  filePathToRoutePath,
+  isSubPath,
+  stripSlash,
+} from "../src/utils";
 
 describe("main logic code test case", () => {
   test("stripSlash test case", () => {
@@ -20,7 +25,9 @@ describe("main logic code test case", () => {
     expect(filePathToRoutePath("home")).toEqual("home");
     expect(filePathToRoutePath("/home/$id")).toEqual("home/:id?");
     expect(filePathToRoutePath("/home/@id")).toEqual("home/:id");
-    expect(filePathToRoutePath("/home/@id/user/$userID")).toEqual("home/:id/user/:userID?");
+    expect(filePathToRoutePath("/home/@id/user/$userID")).toEqual(
+      "home/:id/user/:userID?",
+    );
   });
 
   // test("collectRoutePages test case", () => {

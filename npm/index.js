@@ -1,5 +1,5 @@
-import nodepath2 from 'node:path';
 import { createFilter } from '@rollup/pluginutils';
+import nodepath from 'node:path';
 import fg from 'fast-glob';
 
 // src/index.ts
@@ -16,78 +16,6 @@ var LOADER_FILE_NAME = "loader";
 var HANDLE_FILE_NAME = "handle";
 var OPTIONAL_ROUTE_FLAG = "$";
 var DYNAMIC_ROUTE_FLAG = "@";
-var reserved_route_filed_keys = [
-  LAYOUT_FILE_NAME,
-  ERROR_BOUNDARY_FILE_NAME,
-  LOADER_FILE_NAME,
-  HANDLE_FILE_NAME
-];
-var validRouteFieldKeyRegexp = (fieldKey, filepath, options = {}) => {
-  if (fieldKey === LOADER_FILE_NAME || fieldKey === HANDLE_FILE_NAME) {
-    options.allowTs = true;
-  }
-  return new RegExp(
-    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${fieldKey})(\\.tsx${options.allowTs ? "?" : ""})$`
-  ).test(nodepath2.basename(filepath));
-};
-var isFieldKeyRoute = (routeA, routeB, fieldKey) => {
-  if (nodepath2.dirname(routeA.element) === nodepath2.dirname(routeB.element)) {
-    const condition = validRouteFieldKeyRegexp(
-      fieldKey,
-      routeB.element
-    );
-    if (routeA.path.split("/").length === 1 && routeA.path === "") {
-      return condition;
-    }
-    return condition && routeB.path.split("/").length - routeA.path.split("/").length === 1;
-  }
-  return false;
-};
-function collectRouteFieldKeyRoute(routes) {
-  const testRoutePath = (routePath) => {
-    return reserved_route_filed_keys.map((fieldKey) => {
-      return validRouteFieldKeyRegexp(fieldKey, routePath);
-    }).some((result) => result);
-  };
-  return routes.filter(
-    (route) => testRoutePath(nodepath2.basename(route.element))
-  );
-}
-var reserved_root_field_keys = [
-  NOT_FOUND_FILE_NAME,
-  LAYOUT_FILE_NAME,
-  LOADER_FILE_NAME
-];
-function collectRootRouteRelatedRoute(routes) {
-  return [
-    ...reserved_root_field_keys.map(
-      (fieldKey) => routes.find((route) => route.path === fieldKey)
-    ),
-    routes.filter(
-      (route) => !reserved_root_field_keys.includes(route.path)
-    )
-  ];
-}
-
-// src/index.ts
-var deepCopy = (data) => JSON.parse(JSON.stringify(data));
-var stripSlash = (filepath) => {
-  return filepath.replace(/^\//, "").replace(/\/$/, "");
-};
-var filePathToRoutePath = (filepath) => {
-  filepath = filepath.replace(nodepath2.extname(filepath), "").replaceAll(".", "/") + nodepath2.extname(filepath);
-  const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(nodepath2.extname(filepath), ""));
-  return path_.split("/").map((seg) => {
-    if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
-      return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
-    }
-    if (seg.startsWith(OPTIONAL_ROUTE_FLAG)) {
-      const [, p] = new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
-      return p ? `:${p}?` : seg;
-    }
-    return seg;
-  }).join("/");
-};
 var collectRoutePages = (pages, ignore) => {
   const pageModules = [];
   let routes = [];
@@ -97,7 +25,7 @@ var collectRoutePages = (pages, ignore) => {
       ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore ?? []]
     }).map((file) => file.split("/"));
     for (const file of files) {
-      pageModules.push(nodepath2.resolve(file.join("/")));
+      pageModules.push(nodepath.resolve(file.join("/")));
     }
     while (true) {
       const group = files.map((file) => file[0]);
@@ -116,73 +44,80 @@ var collectRoutePages = (pages, ignore) => {
     };
   });
 };
-var isSubPath = (parentPath, subPath) => {
-  if (parentPath !== "" && subPath.startsWith(parentPath) && subPath.split("/").length - parentPath.split("/").length === 1) {
-    return true;
+var validRouteFieldKeyRegexp = (fieldKey, filepath, options = {}) => {
+  if (fieldKey === LOADER_FILE_NAME || fieldKey === HANDLE_FILE_NAME) {
+    options.allowTs = true;
   }
-  return false;
-};
-var isLayoutFilePath = (filepath) => {
   return new RegExp(
-    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${LAYOUT_FILE_NAME})(\\.tsx)$`
-  ).test(nodepath2.basename(filepath));
+    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${fieldKey})(\\.tsx${options.allowTs ? "?" : ""})$`
+  ).test(nodepath.basename(filepath));
 };
-var isLayoutRoute = (route, layoutRoute) => {
-  if (nodepath2.dirname(route.element) === nodepath2.dirname(layoutRoute.element)) {
-    const condition1 = isLayoutFilePath(
-      nodepath2.basename(layoutRoute.element)
+var isFieldKeyRoute = (routeA, routeB, fieldKey) => {
+  if (nodepath.dirname(routeA.element) === nodepath.dirname(routeB.element)) {
+    const condition = validRouteFieldKeyRegexp(
+      fieldKey,
+      routeB.element
     );
-    return condition1 && layoutRoute.path.split("/").length - route.path.split("/").length === 1;
-  }
-  return false;
-};
-var isErrorBoundaryFilePath = (filepath) => {
-  return new RegExp(
-    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${ERROR_BOUNDARY_FILE_NAME})(\\.tsx)$`
-  ).test(nodepath2.basename(filepath));
-};
-var isErrorBoundaryRoute = (route, errorBoundaryRoute) => {
-  if (nodepath2.dirname(route.element) === nodepath2.dirname(errorBoundaryRoute.element)) {
-    const condition1 = isErrorBoundaryFilePath(
-      nodepath2.basename(errorBoundaryRoute.element)
-    );
-    if (route.path.split("/").length === 1 && route.path === "") {
-      return condition1;
+    if (routeA.path.split("/").length === 1 && routeA.path === "") {
+      return condition;
     }
-    return condition1 && errorBoundaryRoute.path.split("/").length - route.path.split("/").length === 1;
+    return condition && routeB.path.split("/").length - routeA.path.split("/").length === 1;
   }
   return false;
 };
-var isLoaderFilePath = (filepath) => {
-  return new RegExp(
-    `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${LOADER_FILE_NAME})(\\.tsx?)$`
-  ).test(nodepath2.basename(filepath));
+var reserved_route_filed_keys = {
+  [LAYOUT_FILE_NAME]: LAYOUT_FILE_NAME,
+  [ERROR_BOUNDARY_FILE_NAME]: ERROR_BOUNDARY_FILE_NAME,
+  [LOADER_FILE_NAME]: LOADER_FILE_NAME,
+  [HANDLE_FILE_NAME]: HANDLE_FILE_NAME
 };
-var isLoaderRoute = (route, loaderRoute) => {
-  if (nodepath2.dirname(route.element) === nodepath2.dirname(loaderRoute.element)) {
-    const condition1 = isLoaderFilePath(
-      nodepath2.basename(loaderRoute.element)
-    );
-    if (route.path.split("/").length === 1 && route.path === "") {
-      return condition1;
+function collectRouteFieldKeyRoute(routes) {
+  const testRoutePath = (routePath) => {
+    return Object.keys(reserved_route_filed_keys).map((fieldKey) => {
+      return validRouteFieldKeyRegexp(fieldKey, routePath);
+    }).some((result) => result);
+  };
+  return routes.filter(
+    (route) => testRoutePath(nodepath.basename(route.element))
+  );
+}
+var reserved_root_field_keys = {
+  [NOT_FOUND_FILE_NAME]: NOT_FOUND_FILE_NAME,
+  [LAYOUT_FILE_NAME]: LAYOUT_FILE_NAME,
+  [LOADER_FILE_NAME]: LOADER_FILE_NAME
+};
+function collectRootRouteRelatedRoute(routes) {
+  return Object.assign(
+    Object.keys(reserved_root_field_keys).reduce(
+      (object, fieldKey) => ({
+        ...object,
+        [fieldKey]: routes.find((route) => route.path === fieldKey)
+      }),
+      {}
+    ),
+    {
+      routes: routes.filter(
+        (route) => !Object.keys(reserved_root_field_keys).includes(
+          route.path
+        )
+      )
     }
-    return condition1 && loaderRoute.path.split("/").length - route.path.split("/").length === 1;
-  }
-  return false;
-};
-var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent, layoutAndErrorBoundaries = []) => {
-  const subs = routes.filter((route) => isSubPath(parent.path, route.path));
-  const layout = layoutAndErrorBoundaries.find(
-    (route) => isFieldKeyRoute(parent, route, LAYOUT_FILE_NAME)
   );
-  const errorBoundary = layoutAndErrorBoundaries.find(
-    (route) => isFieldKeyRoute(parent, route, ERROR_BOUNDARY_FILE_NAME)
+}
+var arrangeRoutes = (isolateRoutes, parent, subRoutesPathAppendToParent, sideEffectRoutes = []) => {
+  const subs = isolateRoutes.filter(
+    (route) => isSubPath(parent.path, route.path)
   );
-  const loader = layoutAndErrorBoundaries.find(
-    (route) => isFieldKeyRoute(parent, route, LOADER_FILE_NAME)
-  );
-  const handle = layoutAndErrorBoundaries.find(
-    (route) => isFieldKeyRoute(parent, route, HANDLE_FILE_NAME)
+  const { handle, loader, errorBoundary, layout } = Object.keys(
+    reserved_route_filed_keys
+  ).reduce(
+    (object, fieldKey) => ({
+      ...object,
+      [fieldKey]: sideEffectRoutes.find((route) => {
+        return isFieldKeyRoute(parent, route, fieldKey);
+      })
+    }),
+    {}
   );
   subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
   Object.assign(parent, {
@@ -191,10 +126,10 @@ var arrangeRoutes = (routes, parent, subRoutesPathAppendToParent, layoutAndError
     handle: handle?.element,
     children: subs.map(
       (sub) => arrangeRoutes(
-        routes,
+        isolateRoutes,
         sub,
         subRoutesPathAppendToParent,
-        layoutAndErrorBoundaries
+        sideEffectRoutes
       )
     ),
     ErrorBoundary: errorBoundary?.element
@@ -217,10 +152,8 @@ var stringifyRoutes = (routes) => {
       `ErrorBoundary = ErrorBoundary_;`
     ].join("\n;") : "";
     const handle = route.handle ? [
-      [
-        `const { default: handle_ } = await import("${route.handle}")`,
-        `handle = handle_;`
-      ].join(";")
+      `const { default: handle_ } = await import("${route.handle}");`,
+      `handle = handle_;`
     ].join("\n;") : "";
     const loader = route.loader ? [
       "async (...args) => {",
@@ -247,6 +180,32 @@ var stringifyRoutes = (routes) => {
   }).join(",");
   return `[${code}]`;
 };
+var deepCopy = (data) => JSON.parse(JSON.stringify(data));
+var stripSlash = (filepath) => {
+  return filepath.replace(/^\//, "").replace(/\/$/, "");
+};
+var filePathToRoutePath = (filepath) => {
+  filepath = filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") + nodepath.extname(filepath);
+  const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
+  return path_.split("/").map((seg) => {
+    if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
+      return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
+    }
+    if (seg.startsWith(OPTIONAL_ROUTE_FLAG)) {
+      const [, p] = new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
+      return p ? `:${p}?` : seg;
+    }
+    return seg;
+  }).join("/");
+};
+var isSubPath = (parentPath, subPath) => {
+  if (parentPath !== "" && subPath.startsWith(parentPath) && subPath.split("/").length - parentPath.split("/").length === 1) {
+    return true;
+  }
+  return false;
+};
+
+// src/index.ts
 function ConventionalRouter(options) {
   options = { include: [], exclude: [], ...options ?? {} };
   let { include } = options;
@@ -268,18 +227,21 @@ function ConventionalRouter(options) {
     },
     async load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        const routes_ = collectRoutePages(include, exclude);
+        const allRoutes = collectRoutePages(include, exclude);
         const subRoutesPathAppendToParent = [];
-        const [notFoundRoute, rootLayoutRoute, , routes] = collectRootRouteRelatedRoute(routes_);
-        const layoutsAndErrorBoundaries = collectRouteFieldKeyRoute(routes);
+        const {
+          routes,
+          "404": notFoundRoute,
+          layout: rootLayoutRoute
+        } = collectRootRouteRelatedRoute(allRoutes);
+        const sideEffectRoutes = collectRouteFieldKeyRoute(routes);
         if (notFoundRoute) {
           subRoutesPathAppendToParent.push(`/${notFoundRoute.path}`);
         }
-        const layoutsAndErrorBoundariesElements = new Set(
-          layoutsAndErrorBoundaries.map((route) => route.element)
-        );
-        const routesReadyToArrange = routes.filter(
-          (r) => !layoutsAndErrorBoundariesElements.has(r.element)
+        const isolateRoutes = routes.filter(
+          (r) => !new Set(sideEffectRoutes.map((route) => route.element)).has(
+            r.element
+          )
         );
         const mapCallback = (r) => {
           if (r.path.startsWith("/")) {
@@ -291,15 +253,15 @@ function ConventionalRouter(options) {
             };
           }
         };
-        routesReadyToArrange.filter((r) => r.path.split("/").length === 1).forEach(
+        isolateRoutes.filter((r) => r.path.split("/").length === 1).forEach(
           (route) => arrangeRoutes(
-            routesReadyToArrange,
+            isolateRoutes,
             route,
             subRoutesPathAppendToParent,
-            layoutsAndErrorBoundaries
+            sideEffectRoutes
           )
         );
-        const intermediaRoutes = routesReadyToArrange.filter(
+        const intermediaRoutes = isolateRoutes.filter(
           (r) => !subRoutesPathAppendToParent.includes(r.path)
         );
         subRoutesPathAppendToParent.length = 0;
@@ -308,7 +270,7 @@ function ConventionalRouter(options) {
             intermediaRoutes,
             route,
             subRoutesPathAppendToParent,
-            layoutsAndErrorBoundaries
+            sideEffectRoutes
           )
         );
         let finalRoutes = intermediaRoutes.filter((r) => !subRoutesPathAppendToParent.includes(r.path)).map(mapCallback);
@@ -344,6 +306,6 @@ function ConventionalRouter(options) {
   };
 }
 
-export { arrangeRoutes, collectRoutePages, deepCopy, ConventionalRouter as default, filePathToRoutePath, isErrorBoundaryFilePath, isErrorBoundaryRoute, isLayoutFilePath, isLayoutRoute, isLoaderFilePath, isLoaderRoute, isSubPath, stringifyRoutes, stripSlash };
+export { ConventionalRouter as default };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map
