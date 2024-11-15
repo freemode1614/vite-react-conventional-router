@@ -7,7 +7,6 @@ import {
   DEFAULT_IGNORE_PATTERN,
   DYNAMIC_ROUTE_FLAG,
   ERROR_BOUNDARY_FILE_NAME,
-  FILE_PATH_SEP,
   HANDLE_FILE_NAME,
   LAYOUT_FILE_NAME,
   LOADER_FILE_NAME,
@@ -33,10 +32,11 @@ export const collectRoutePages = (
         deep: Infinity,
         ignore: [...DEFAULT_IGNORE_PATTERN, ...(ignore ?? [])],
       })
-      .map((file) => file.split(FILE_PATH_SEP));
+      .map((file) => file.split(ROUTE_PATH_SEP));
 
     for (const file of files) {
-      pageModules.push(nodepath.resolve(file.join(FILE_PATH_SEP)));
+      // Keep Relative Path For Both Windows, Linux and MacOS
+      pageModules.push("/" + file.join(ROUTE_PATH_SEP));
     }
 
     while (true) {
@@ -50,7 +50,7 @@ export const collectRoutePages = (
 
     routes = [
       ...routes,
-      ...files.map((file) => file.join(FILE_PATH_SEP)).flat(),
+      ...files.map((file) => file.join(ROUTE_PATH_SEP)).flat(),
     ];
   }
 
@@ -92,14 +92,14 @@ export const isFieldKeyRoute = (
       routeB.element! as string,
     );
 
-    if (routeA.path!.split(FILE_PATH_SEP).length === 1 && routeA.path === "") {
+    if (routeA.path!.split(ROUTE_PATH_SEP).length === 1 && routeA.path === "") {
       return condition;
     }
 
     return (
       condition &&
-      routeB.path!.split(FILE_PATH_SEP).length -
-        routeA.path!.split(FILE_PATH_SEP).length ===
+      routeB.path!.split(ROUTE_PATH_SEP).length -
+        routeA.path!.split(ROUTE_PATH_SEP).length ===
         1
     );
   }
@@ -292,14 +292,14 @@ export const filePathToRoutePath = (filepath: string) => {
   filepath =
     filepath
       .replace(nodepath.extname(filepath), "")
-      .replaceAll(".", FILE_PATH_SEP) + nodepath.extname(filepath);
+      .replaceAll(".", ROUTE_PATH_SEP) + nodepath.extname(filepath);
 
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
     ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
     : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
 
   return path_
-    .split(FILE_PATH_SEP)
+    .split(ROUTE_PATH_SEP)
     .map((seg) => {
       if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
         return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
@@ -313,7 +313,7 @@ export const filePathToRoutePath = (filepath: string) => {
 
       return seg;
     })
-    .join(FILE_PATH_SEP);
+    .join(ROUTE_PATH_SEP);
 };
 
 /**
