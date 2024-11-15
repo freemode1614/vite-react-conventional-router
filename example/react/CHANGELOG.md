@@ -1,5 +1,11 @@
 # react-example
 
+## 0.2.1
+
+### Patch Changes
+
+- fix: Module path error in Windows
+
 ## 0.1.0
 
 ### Minor Changes
