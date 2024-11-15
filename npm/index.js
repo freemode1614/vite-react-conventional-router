@@ -1,10 +1,8 @@
 import { createFilter } from '@rollup/pluginutils';
-import nodepath from 'node:path';
+import nodepath2 from 'node:path';
 import fg from 'fast-glob';
 
 // src/index.ts
-
-// src/constants.ts
 var DEFAULT_IGNORE_PATTERN = ["node_modules/**"];
 var PLUGIN_NAME = "vite-plugin-conventional-router";
 var PLUGIN_VIRTUAL_MODULE_NAME = "virtual:routes";
@@ -16,6 +14,8 @@ var LOADER_FILE_NAME = "loader";
 var HANDLE_FILE_NAME = "handle";
 var OPTIONAL_ROUTE_FLAG = "$";
 var DYNAMIC_ROUTE_FLAG = "@";
+var FILE_PATH_SEP = nodepath2.sep;
+var ROUTE_PATH_SEP = "/";
 var collectRoutePages = (pages, ignore) => {
   const pageModules = [];
   let routes = [];
@@ -23,9 +23,9 @@ var collectRoutePages = (pages, ignore) => {
     let files = fg.sync(pattern, {
       deep: Infinity,
       ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore ?? []]
-    }).map((file) => file.split("/"));
+    }).map((file) => file.split(FILE_PATH_SEP));
     for (const file of files) {
-      pageModules.push(nodepath.resolve(file.join("/")));
+      pageModules.push(nodepath2.resolve(file.join(FILE_PATH_SEP)));
     }
     while (true) {
       const group = files.map((file) => file[0]);
@@ -35,7 +35,10 @@ var collectRoutePages = (pages, ignore) => {
         files = files.map((file) => file.slice(1));
       }
     }
-    routes = [...routes, ...files.map((file) => file.join("/")).flat()];
+    routes = [
+      ...routes,
+      ...files.map((file) => file.join(FILE_PATH_SEP)).flat()
+    ];
   }
   return routes.map((s) => filePathToRoutePath(s)).map((route, index) => {
     return {
@@ -50,18 +53,18 @@ var validRouteFieldKeyRegexp = (fieldKey, filepath, options = {}) => {
   }
   return new RegExp(
     `^([\\w\\${OPTIONAL_ROUTE_FLAG}\\${DYNAMIC_ROUTE_FLAG}]+\\.){0,}(${fieldKey})(\\.tsx${options.allowTs ? "?" : ""})$`
-  ).test(nodepath.basename(filepath));
+  ).test(nodepath2.basename(filepath));
 };
 var isFieldKeyRoute = (routeA, routeB, fieldKey) => {
-  if (nodepath.dirname(routeA.element) === nodepath.dirname(routeB.element)) {
+  if (nodepath2.dirname(routeA.element) === nodepath2.dirname(routeB.element)) {
     const condition = validRouteFieldKeyRegexp(
       fieldKey,
       routeB.element
     );
-    if (routeA.path.split("/").length === 1 && routeA.path === "") {
+    if (routeA.path.split(FILE_PATH_SEP).length === 1 && routeA.path === "") {
       return condition;
     }
-    return condition && routeB.path.split("/").length - routeA.path.split("/").length === 1;
+    return condition && routeB.path.split(FILE_PATH_SEP).length - routeA.path.split(FILE_PATH_SEP).length === 1;
   }
   return false;
 };
@@ -78,7 +81,7 @@ function collectRouteFieldKeyRoute(routes) {
     }).some((result) => result);
   };
   return routes.filter(
-    (route) => testRoutePath(nodepath.basename(route.element))
+    (route) => testRoutePath(nodepath2.basename(route.element))
   );
 }
 var reserved_root_field_keys = {
@@ -119,9 +122,11 @@ var arrangeRoutes = (isolateRoutes, parent, subRoutesPathAppendToParent, sideEff
     }),
     {}
   );
-  subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path));
+  subRoutesPathAppendToParent.push(
+    ...subs.map((s) => ROUTE_PATH_SEP + s.path)
+  );
   Object.assign(parent, {
-    path: "/" + parent.path,
+    path: ROUTE_PATH_SEP + parent.path,
     loader: loader?.element,
     handle: handle?.element,
     children: subs.map(
@@ -185,9 +190,9 @@ var stripSlash = (filepath) => {
   return filepath.replace(/^\//, "").replace(/\/$/, "");
 };
 var filePathToRoutePath = (filepath) => {
-  filepath = filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") + nodepath.extname(filepath);
-  const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
-  return path_.split("/").map((seg) => {
+  filepath = filepath.replace(nodepath2.extname(filepath), "").replaceAll(".", FILE_PATH_SEP) + nodepath2.extname(filepath);
+  const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE) ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, "")) : stripSlash(filepath.replace(nodepath2.extname(filepath), ""));
+  return path_.split(FILE_PATH_SEP).map((seg) => {
     if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
       return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
     }
@@ -196,10 +201,10 @@ var filePathToRoutePath = (filepath) => {
       return p ? `:${p}?` : seg;
     }
     return seg;
-  }).join("/");
+  }).join(FILE_PATH_SEP);
 };
 var isSubPath = (parentPath, subPath) => {
-  if (parentPath !== "" && subPath.startsWith(parentPath) && subPath.split("/").length - parentPath.split("/").length === 1) {
+  if (parentPath !== "" && subPath.startsWith(parentPath) && subPath.split(ROUTE_PATH_SEP).length - parentPath.split(ROUTE_PATH_SEP).length === 1) {
     return true;
   }
   return false;

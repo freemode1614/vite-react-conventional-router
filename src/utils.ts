@@ -7,12 +7,14 @@ import {
   DEFAULT_IGNORE_PATTERN,
   DYNAMIC_ROUTE_FLAG,
   ERROR_BOUNDARY_FILE_NAME,
+  FILE_PATH_SEP,
   HANDLE_FILE_NAME,
   LAYOUT_FILE_NAME,
   LOADER_FILE_NAME,
   NOT_FOUND_FILE_NAME,
   OPTIONAL_ROUTE_FLAG,
   PLUGIN_MAIN_PAGE_FILE,
+  ROUTE_PATH_SEP,
 } from "./constants";
 
 /**
@@ -31,10 +33,10 @@ export const collectRoutePages = (
         deep: Infinity,
         ignore: [...DEFAULT_IGNORE_PATTERN, ...(ignore ?? [])],
       })
-      .map((file) => file.split("/"));
+      .map((file) => file.split(FILE_PATH_SEP));
 
     for (const file of files) {
-      pageModules.push(nodepath.resolve(file.join("/")));
+      pageModules.push(nodepath.resolve(file.join(FILE_PATH_SEP)));
     }
 
     while (true) {
@@ -46,7 +48,10 @@ export const collectRoutePages = (
       }
     }
 
-    routes = [...routes, ...files.map((file) => file.join("/")).flat()];
+    routes = [
+      ...routes,
+      ...files.map((file) => file.join(FILE_PATH_SEP)).flat(),
+    ];
   }
 
   return routes
@@ -87,13 +92,15 @@ export const isFieldKeyRoute = (
       routeB.element! as string,
     );
 
-    if (routeA.path!.split("/").length === 1 && routeA.path === "") {
+    if (routeA.path!.split(FILE_PATH_SEP).length === 1 && routeA.path === "") {
       return condition;
     }
 
     return (
       condition &&
-      routeB.path!.split("/").length - routeA.path!.split("/").length === 1
+      routeB.path!.split(FILE_PATH_SEP).length -
+        routeA.path!.split(FILE_PATH_SEP).length ===
+        1
     );
   }
 
@@ -185,10 +192,12 @@ export const arrangeRoutes = (
     {} as SideEffects,
   );
 
-  subRoutesPathAppendToParent.push(...subs.map((s) => "/" + s.path!));
+  subRoutesPathAppendToParent.push(
+    ...subs.map((s) => ROUTE_PATH_SEP + s.path!),
+  );
 
   Object.assign(parent, {
-    path: "/" + parent.path!,
+    path: ROUTE_PATH_SEP + parent.path!,
     loader: loader?.element,
     handle: handle?.element,
     children: subs.map((sub) =>
@@ -281,15 +290,16 @@ export const stripSlash = (filepath: string) => {
  */
 export const filePathToRoutePath = (filepath: string) => {
   filepath =
-    filepath.replace(nodepath.extname(filepath), "").replaceAll(".", "/") +
-    nodepath.extname(filepath);
+    filepath
+      .replace(nodepath.extname(filepath), "")
+      .replaceAll(".", FILE_PATH_SEP) + nodepath.extname(filepath);
 
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
     ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
     : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
 
   return path_
-    .split("/")
+    .split(FILE_PATH_SEP)
     .map((seg) => {
       if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
         return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
@@ -303,7 +313,7 @@ export const filePathToRoutePath = (filepath: string) => {
 
       return seg;
     })
-    .join("/");
+    .join(FILE_PATH_SEP);
 };
 
 /**
@@ -313,7 +323,9 @@ export const isSubPath = (parentPath: string, subPath: string) => {
   if (
     parentPath !== "" &&
     subPath.startsWith(parentPath) &&
-    subPath.split("/").length - parentPath.split("/").length === 1
+    subPath.split(ROUTE_PATH_SEP).length -
+      parentPath.split(ROUTE_PATH_SEP).length ===
+      1
   ) {
     return true;
   }
