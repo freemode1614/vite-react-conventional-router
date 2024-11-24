@@ -44,9 +44,9 @@ export default function ConventionalRouter(
         return source;
       }
 
-      return null;
+      return undefined;
     },
-    async load(id) {
+    load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const allRoutes = collectRoutePages(include, exclude);
         const subRoutesPathAppendToParent: string[] = [];
@@ -55,7 +55,7 @@ export default function ConventionalRouter(
          * Only need one not found fallback
          */
         const {
-          routes,
+          routes = [],
           "404": notFoundRoute,
           layout: rootLayoutRoute,
         } = collectRootRouteRelatedRoute(allRoutes);
@@ -70,7 +70,7 @@ export default function ConventionalRouter(
         const isolateRoutes = routes.filter(
           (r) =>
             !new Set(sideEffectRoutes.map((route) => route.element)).has(
-              r.element!,
+              r.element,
             ),
         );
 
@@ -156,7 +156,9 @@ export default function ConventionalRouter(
         filter(id) &&
         (change.event === "create" || change.event === "delete")
       ) {
-        devServer.restart();
+        devServer.restart().catch((error: unknown) => {
+          this.warn(`Restart failed: ${(error as Error).message}`);
+        });
       }
     },
   };

@@ -21,7 +21,7 @@ import {
  */
 export const collectRoutePages = (
   pages: Pattern[],
-  ignore: Pattern[],
+  ignore: Pattern[] = [],
 ): NonIndexRouteObject[] => {
   const pageModules: string[] = [];
   let routes: string[] = [];
@@ -30,7 +30,7 @@ export const collectRoutePages = (
     let files = fg
       .sync(pattern, {
         deep: Infinity,
-        ignore: [...DEFAULT_IGNORE_PATTERN, ...(ignore ?? [])],
+        ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore],
       })
       .map((file) => file.split(ROUTE_PATH_SEP));
 
@@ -39,6 +39,7 @@ export const collectRoutePages = (
       pageModules.push("/" + file.join(ROUTE_PATH_SEP));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       const group = files.map((file) => file[0]);
       if (new Set(group).size > 1) {
@@ -119,7 +120,7 @@ const reserved_route_filed_keys = {
 
 type SideEffects = {
   [Key in keyof typeof reserved_route_filed_keys]?: NonIndexRouteObject;
-} & { routes: NonIndexRouteObject[] };
+} & { routes?: NonIndexRouteObject[] };
 
 export function collectRouteFieldKeyRoute(routes: NonIndexRouteObject[]) {
   const testRoutePath = (routePath: string) => {
@@ -142,26 +143,23 @@ const reserved_root_field_keys = {
 };
 
 type CollectReturn = {
-  [Key in keyof typeof reserved_root_field_keys]: NonIndexRouteObject;
-} & { routes: NonIndexRouteObject[] };
+  [Key in keyof typeof reserved_root_field_keys]?: NonIndexRouteObject;
+} & { routes?: NonIndexRouteObject[] };
 
 export function collectRootRouteRelatedRoute(
   routes: NonIndexRouteObject[],
 ): CollectReturn {
   return Object.assign(
-    Object.keys(reserved_root_field_keys).reduce(
+    Object.keys(reserved_root_field_keys).reduce<CollectReturn>(
       (object, fieldKey) => ({
         ...object,
         [fieldKey]: routes.find((route) => route.path === fieldKey),
       }),
-      {} as CollectReturn,
+      {},
     ),
     {
       routes: routes.filter(
-        (route) =>
-          !Object.keys(reserved_root_field_keys).includes(
-            route.path! as string,
-          ),
+        (route) => !Object.keys(reserved_root_field_keys).includes(route.path!),
       ),
     },
   );
@@ -182,14 +180,14 @@ export const arrangeRoutes = (
 
   const { handle, loader, errorBoundary, layout } = Object.keys(
     reserved_route_filed_keys,
-  ).reduce(
+  ).reduce<SideEffects>(
     (object, fieldKey) => ({
       ...object,
       [fieldKey]: sideEffectRoutes.find((route) => {
         return isFieldKeyRoute(parent, route, fieldKey);
       }),
     }),
-    {} as SideEffects,
+    {},
   );
 
   subRoutesPathAppendToParent.push(
@@ -276,7 +274,7 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
 };
 
 export const deepCopy = <T = unknown>(data: T): T =>
-  JSON.parse(JSON.stringify(data));
+  JSON.parse(JSON.stringify(data)) as T;
 
 /**
  * Strp slash before and after.
