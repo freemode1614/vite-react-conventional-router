@@ -1,11 +1,33 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
+var logger = require('@moccona/logger');
 var pluginutils = require('@rollup/pluginutils');
 var nodepath2 = require('path');
 var fg = require('fast-glob');
 
 function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 
+function _interopNamespace(e) {
+  if (e && e.__esModule) return e;
+  var n = Object.create(null);
+  if (e) {
+    Object.keys(e).forEach(function (k) {
+      if (k !== 'default') {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () { return e[k]; }
+        });
+      }
+    });
+  }
+  n.default = e;
+  return Object.freeze(n);
+}
+
+var logger__namespace = /*#__PURE__*/_interopNamespace(logger);
 var nodepath2__default = /*#__PURE__*/_interopDefault(nodepath2);
 var fg__default = /*#__PURE__*/_interopDefault(fg);
 
@@ -94,7 +116,8 @@ function collectRouteFieldKeyRoute(routes) {
 var reserved_root_field_keys = {
   [NOT_FOUND_FILE_NAME]: NOT_FOUND_FILE_NAME,
   [LAYOUT_FILE_NAME]: LAYOUT_FILE_NAME,
-  [LOADER_FILE_NAME]: LOADER_FILE_NAME
+  [LOADER_FILE_NAME]: LOADER_FILE_NAME,
+  [HANDLE_FILE_NAME]: HANDLE_FILE_NAME
 };
 function collectRootRouteRelatedRoute(routes) {
   return Object.assign(
@@ -146,6 +169,7 @@ var arrangeRoutes = (isolateRoutes, parent, subRoutesPathAppendToParent, sideEff
   });
   if (layout) {
     const parentCopy = deepCopy(parent);
+    delete parent.path;
     return Object.assign(parent, layout, {
       path: parentCopy.path,
       children: [parentCopy],
@@ -216,6 +240,8 @@ var isSubPath = (parentPath, subPath) => {
 };
 
 // src/index.ts
+var { createScopedLogger } = logger__namespace;
+var log = createScopedLogger(PLUGIN_NAME);
 function ConventionalRouter(options) {
   options = { include: [], exclude: [], ...options ?? {} };
   let { include } = options;
@@ -231,6 +257,7 @@ function ConventionalRouter(options) {
     },
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
+        log.info("Read virtual routes");
         return source;
       }
       return void 0;
@@ -306,7 +333,7 @@ function ConventionalRouter(options) {
           `
         };
       }
-      return null;
+      return void 0;
     },
     watchChange(id, change) {
       if (filter(id) && (change.event === "create" || change.event === "delete")) {
@@ -319,8 +346,7 @@ function ConventionalRouter(options) {
   };
 }
 
-module.exports = ConventionalRouter;
+exports.default = ConventionalRouter;
+exports.log = log;
 //# sourceMappingURL=index.cjs.map
-
-module.exports = exports.default;
 //# sourceMappingURL=index.cjs.map

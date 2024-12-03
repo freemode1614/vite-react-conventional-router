@@ -1,3 +1,4 @@
+import * as logger from '@moccona/logger';
 import { createFilter } from '@rollup/pluginutils';
 import nodepath2 from 'node:path';
 import fg from 'fast-glob';
@@ -87,7 +88,8 @@ function collectRouteFieldKeyRoute(routes) {
 var reserved_root_field_keys = {
   [NOT_FOUND_FILE_NAME]: NOT_FOUND_FILE_NAME,
   [LAYOUT_FILE_NAME]: LAYOUT_FILE_NAME,
-  [LOADER_FILE_NAME]: LOADER_FILE_NAME
+  [LOADER_FILE_NAME]: LOADER_FILE_NAME,
+  [HANDLE_FILE_NAME]: HANDLE_FILE_NAME
 };
 function collectRootRouteRelatedRoute(routes) {
   return Object.assign(
@@ -139,6 +141,7 @@ var arrangeRoutes = (isolateRoutes, parent, subRoutesPathAppendToParent, sideEff
   });
   if (layout) {
     const parentCopy = deepCopy(parent);
+    delete parent.path;
     return Object.assign(parent, layout, {
       path: parentCopy.path,
       children: [parentCopy],
@@ -209,6 +212,8 @@ var isSubPath = (parentPath, subPath) => {
 };
 
 // src/index.ts
+var { createScopedLogger } = logger;
+var log = createScopedLogger(PLUGIN_NAME);
 function ConventionalRouter(options) {
   options = { include: [], exclude: [], ...options ?? {} };
   let { include } = options;
@@ -224,6 +229,7 @@ function ConventionalRouter(options) {
     },
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
+        log.info("Read virtual routes");
         return source;
       }
       return void 0;
@@ -299,7 +305,7 @@ function ConventionalRouter(options) {
           `
         };
       }
-      return null;
+      return void 0;
     },
     watchChange(id, change) {
       if (filter(id) && (change.event === "create" || change.event === "delete")) {
@@ -312,6 +318,6 @@ function ConventionalRouter(options) {
   };
 }
 
-export { ConventionalRouter as default };
+export { ConventionalRouter as default, log };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

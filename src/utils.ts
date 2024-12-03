@@ -140,6 +140,7 @@ const reserved_root_field_keys = {
   [NOT_FOUND_FILE_NAME]: NOT_FOUND_FILE_NAME,
   [LAYOUT_FILE_NAME]: LAYOUT_FILE_NAME,
   [LOADER_FILE_NAME]: LOADER_FILE_NAME,
+  [HANDLE_FILE_NAME]: HANDLE_FILE_NAME,
 };
 
 type CollectReturn = {
@@ -211,6 +212,7 @@ export const arrangeRoutes = (
 
   if (layout) {
     const parentCopy = deepCopy(parent);
+    delete parent.path;
     return Object.assign(parent, layout, {
       path: parentCopy.path,
       children: [parentCopy],

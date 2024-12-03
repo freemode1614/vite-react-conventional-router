@@ -1,4 +1,4 @@
-import { createScopedLogger } from "@moccona/logger";
+import * as logger from "@moccona/logger";
 import { createFilter } from "@rollup/pluginutils";
 import { type Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
@@ -18,7 +18,9 @@ type ConventionalRouterProps = {
   exclude: Pattern | Pattern[];
 };
 
-export const logger = createScopedLogger(PLUGIN_NAME);
+const { createScopedLogger } = logger;
+
+export const log = createScopedLogger(PLUGIN_NAME);
 
 export default function ConventionalRouter(
   options?: Partial<ConventionalRouterProps>,
@@ -44,7 +46,7 @@ export default function ConventionalRouter(
     },
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
-        logger.info("Read virtual routes");
+        log.info("Read virtual routes");
         return source;
       }
 
