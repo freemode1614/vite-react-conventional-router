@@ -23,13 +23,13 @@ var OPTIONAL_ROUTE_FLAG = "$";
 var DYNAMIC_ROUTE_FLAG = "@";
 nodepath2__default.default.sep;
 var ROUTE_PATH_SEP = "/";
-var collectRoutePages = (pages, ignore) => {
+var collectRoutePages = (pages, ignore = []) => {
   const pageModules = [];
   let routes = [];
   for (const pattern of pages) {
     let files = fg__default.default.sync(pattern, {
       deep: Infinity,
-      ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore ?? []]
+      ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore]
     }).map((file) => file.split(ROUTE_PATH_SEP));
     for (const file of files) {
       pageModules.push("/" + file.join(ROUTE_PATH_SEP));
@@ -107,9 +107,7 @@ function collectRootRouteRelatedRoute(routes) {
     ),
     {
       routes: routes.filter(
-        (route) => !Object.keys(reserved_root_field_keys).includes(
-          route.path
-        )
+        (route) => !Object.keys(reserved_root_field_keys).includes(route.path)
       )
     }
   );
@@ -235,14 +233,14 @@ function ConventionalRouter(options) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
         return source;
       }
-      return null;
+      return void 0;
     },
-    async load(id) {
+    load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const allRoutes = collectRoutePages(include, exclude);
         const subRoutesPathAppendToParent = [];
         const {
-          routes,
+          routes = [],
           "404": notFoundRoute,
           layout: rootLayoutRoute
         } = collectRootRouteRelatedRoute(allRoutes);
@@ -312,7 +310,10 @@ function ConventionalRouter(options) {
     },
     watchChange(id, change) {
       if (filter(id) && (change.event === "create" || change.event === "delete")) {
-        devServer.restart();
+        this.info(`Prepare restart because ${id} change`);
+        devServer.restart().catch((error) => {
+          this.warn(`Restart failed: ${error.message}`);
+        });
       }
     }
   };

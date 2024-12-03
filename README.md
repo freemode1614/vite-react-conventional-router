@@ -80,6 +80,7 @@ export default function App() {
 `src/pages/home.list.tsx`       -> `/home/list`
 `src/pages/home.@id.tsx`        -> `/home/:id`
 `src/pages/home.list.$id.tsx`   -> `/home/list/:id?`
+`src/pages/blog/_.tsx`   -> `/home/blog/*`
 ```
 
 ### Layout
@@ -109,3 +110,11 @@ export default function App() {
 ## 如何组织路由文件内容
 
 文件内容组织参考 _react-router_ 的 [**lazy**](https://reactrouter.com/en/main/route/lazy#lazy) 部分。唯一不同的是，默认到处会作为 _Component_ 被使用。
+
+## Todos
+
+- [x] "virtual:routes" module for routes export.
+- [x] Support dynamic route.
+- [x] Support optional route.
+- [x] Split loader/action into individual file.
+- [ ] Migrate react-router from v6 to v7.

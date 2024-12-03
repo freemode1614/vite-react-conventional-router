@@ -1,21 +1,24 @@
+import { createScopedLogger } from "@moccona/logger";
 import { createFilter } from "@rollup/pluginutils";
 import { type Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
-import { type Plugin, ViteDevServer } from "vite";
+import type { Plugin, ViteDevServer } from "vite";
 
-import { PLUGIN_NAME, PLUGIN_VIRTUAL_MODULE_NAME } from "./constants";
+import { PLUGIN_NAME, PLUGIN_VIRTUAL_MODULE_NAME } from "@/constants";
 import {
   arrangeRoutes,
   collectRootRouteRelatedRoute,
   collectRouteFieldKeyRoute,
   collectRoutePages,
   stringifyRoutes,
-} from "./utils";
+} from "@/utils";
 
 type ConventionalRouterProps = {
   include: Pattern | Pattern[];
   exclude: Pattern | Pattern[];
 };
+
+export const logger = createScopedLogger(PLUGIN_NAME);
 
 export default function ConventionalRouter(
   options?: Partial<ConventionalRouterProps>,
@@ -41,6 +44,7 @@ export default function ConventionalRouter(
     },
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
+        logger.info("Read virtual routes");
         return source;
       }
 
@@ -85,7 +89,6 @@ export default function ConventionalRouter(
           }
         };
 
-        // 1.
         isolateRoutes
           // First filer
           .filter((r) => r.path!.split("/").length === 1)
@@ -149,13 +152,14 @@ export default function ConventionalRouter(
         };
       }
 
-      return null;
+      return undefined;
     },
     watchChange(id, change) {
       if (
         filter(id) &&
         (change.event === "create" || change.event === "delete")
       ) {
+        this.info(`Prepare restart because ${id} change`);
         devServer.restart().catch((error: unknown) => {
           this.warn(`Restart failed: ${(error as Error).message}`);
         });

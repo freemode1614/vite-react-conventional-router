@@ -1,7 +1,7 @@
 import nodepath from "node:path";
 
 import fg, { Pattern } from "fast-glob";
-import { NonIndexRouteObject } from "react-router";
+import type { NonIndexRouteObject } from "react-router";
 
 import {
   DEFAULT_IGNORE_PATTERN,
@@ -14,7 +14,7 @@ import {
   OPTIONAL_ROUTE_FLAG,
   PLUGIN_MAIN_PAGE_FILE,
   ROUTE_PATH_SEP,
-} from "./constants";
+} from "@/constants";
 
 /**
  * Collect files from FS by fast-glob.
@@ -100,8 +100,8 @@ export const isFieldKeyRoute = (
     return (
       condition &&
       routeB.path!.split(ROUTE_PATH_SEP).length -
-        routeA.path!.split(ROUTE_PATH_SEP).length ===
-        1
+      routeA.path!.split(ROUTE_PATH_SEP).length ===
+      1
     );
   }
 
@@ -230,25 +230,25 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
     .map((route) => {
       const errorBoundary = route.ErrorBoundary
         ? [
-            `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}")`,
-            `ErrorBoundary = ErrorBoundary_;`,
-          ].join("\n;")
+          `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}")`,
+          `ErrorBoundary = ErrorBoundary_;`,
+        ].join("\n;")
         : "";
 
       const handle = route.handle
         ? [
-            `const { default: handle_ } = await import("${route.handle}");`,
-            `handle = handle_;`,
-          ].join("\n;")
+          `const { default: handle_ } = await import("${route.handle}");`,
+          `handle = handle_;`,
+        ].join("\n;")
         : "";
 
       const loader = route.loader
         ? [
-            "async (...args) => {",
-            `const { default: loader_ } = await import("${route.loader}");`,
-            "return loader_(...args);",
-            "}",
-          ].join("\n")
+          "async (...args) => {",
+          `const { default: loader_ } = await import("${route.loader}");`,
+          "return loader_(...args);",
+          "}",
+        ].join("\n")
         : "undefined";
 
       return `{
@@ -322,8 +322,8 @@ export const isSubPath = (parentPath: string, subPath: string) => {
     parentPath !== "" &&
     subPath.startsWith(parentPath) &&
     subPath.split(ROUTE_PATH_SEP).length -
-      parentPath.split(ROUTE_PATH_SEP).length ===
-      1
+    parentPath.split(ROUTE_PATH_SEP).length ===
+    1
   ) {
     return true;
   }

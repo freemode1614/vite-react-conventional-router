@@ -5,7 +5,7 @@ import {
   filePathToRoutePath,
   isSubPath,
   stripSlash,
-} from "../src/utils";
+} from "@/utils";
 
 describe("main logic code test case", () => {
   test("stripSlash test case", () => {

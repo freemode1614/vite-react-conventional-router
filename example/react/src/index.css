@@ -1,0 +1,45 @@
+
+@keyframes from-bottom {
+  from {}
+  to {}
+}
+
+@keyframes to-bottom {
+}
+
+/* Copy this code after the above code */
+@keyframes from-left {
+  0% {
+	  transform: translateX(100%);
+  }
+  100% {
+	  transform: translateX(0);
+  }
+}
+
+@keyframes to-right {
+  0% {
+	  transform: translateX(0);
+  }
+  100% {
+	  transform: translateX(100%);
+  }
+}
+
+::view-transition-old(root) {
+  animation: to-right 1s ease 0s 1 normal backwards;
+}
+
+
+::view-transition-new(root) {
+  animation: from-left 1s ease 0s 1 normal backwards;
+}
+
+::view-transition-old(page-one) {
+  animation: to-right 1s ease 0s 1 normal backwards;
+}
+
+
+::view-transition-new(page-one) {
+  animation: from-left 1s ease 0s 1 normal backwards;
+}
