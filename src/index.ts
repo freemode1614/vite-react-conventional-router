@@ -2,7 +2,7 @@ import * as logger from "@moccona/logger";
 import { createFilter } from "@rollup/pluginutils";
 import { type Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
-import type { Plugin, ViteDevServer } from "vite";
+import { loadEnv, type Plugin, type ViteDevServer } from "vite";
 
 import { PLUGIN_NAME, PLUGIN_VIRTUAL_MODULE_NAME } from "@/constants";
 import {
@@ -41,6 +41,12 @@ export default function ConventionalRouter(
 
   return {
     name: PLUGIN_NAME,
+    config(config, env) {
+      const envs = loadEnv(env.mode, config.envDir ?? ".", "");
+      const { BASE_NAME } = envs;
+      config.base = BASE_NAME || "";
+      return config;
+    },
     configureServer(server) {
       devServer = server;
     },

@@ -91,7 +91,7 @@ export default function App() {
 
   作为同级目录下的布局组件。
 
-- \*\*/page.layout.tsx
+- \*\*/pageName.layout.tsx
 
   作为page路由的布局组件。
 
@@ -111,10 +111,17 @@ export default function App() {
 
 文件内容组织参考 _react-router_ 的 [**lazy**](https://reactrouter.com/en/main/route/lazy#lazy) 部分。唯一不同的是，默认到处会作为 _Component_ 被使用。
 
+## 环境变量
+
+插件支持从环境变量中读取 _browser router_ 的配置。
+
+- BASE_NAME 用程序的basename，用于不能部署到域的根目录，而是一个子目录的情况。
+
 ## Todos
 
 - [x] "virtual:routes" module for routes export.
 - [x] Support dynamic route.
 - [x] Support optional route.
 - [x] Split loader/action into individual file.
+- [x] Support reading router configuration from .env file.
 - [ ] Migrate react-router from v6 to v7.
