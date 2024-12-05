@@ -4,6 +4,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var logger = require('@moccona/logger');
 var pluginutils = require('@rollup/pluginutils');
+var vite = require('vite');
 var nodepath2 = require('path');
 var fg = require('fast-glob');
 
@@ -252,6 +253,12 @@ function ConventionalRouter(options) {
   let devServer;
   return {
     name: PLUGIN_NAME,
+    config(config, env) {
+      const envs = vite.loadEnv(env.mode, config.envDir ?? ".", "");
+      const { BASE_NAME } = envs;
+      config.base = BASE_NAME || "";
+      return config;
+    },
     configureServer(server) {
       devServer = server;
     },

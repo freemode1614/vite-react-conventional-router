@@ -1,5 +1,6 @@
 import * as logger from '@moccona/logger';
 import { createFilter } from '@rollup/pluginutils';
+import { loadEnv } from 'vite';
 import nodepath2 from 'node:path';
 import fg from 'fast-glob';
 
@@ -224,6 +225,12 @@ function ConventionalRouter(options) {
   let devServer;
   return {
     name: PLUGIN_NAME,
+    config(config, env) {
+      const envs = loadEnv(env.mode, config.envDir ?? ".", "");
+      const { BASE_NAME } = envs;
+      config.base = BASE_NAME || "";
+      return config;
+    },
     configureServer(server) {
       devServer = server;
     },
