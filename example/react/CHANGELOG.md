@@ -1,5 +1,11 @@
 # react-example
 
+## 0.2.2
+
+### Patch Changes
+
+- Add .env file config support
+
 ## 0.2.1
 
 ### Patch Changes
