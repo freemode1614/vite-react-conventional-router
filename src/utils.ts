@@ -257,7 +257,7 @@ export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
         path: "${route.path}",
         loader: ${loader},
         async lazy(){
-          const { default: Component, initProps ,...rest }  = await import("${route.element}");
+          const { default: Component, initProps ,...rest }  = await import("${route.element as string}");
           let ErrorBoundary = undefined;
           let loader = undefined;
           let handle = undefined;

@@ -2,9 +2,7 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "ESNext",
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     /* Modules */
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -23,13 +21,8 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "src",
-    "__tests__"
-  ]
+  "include": ["src", "__tests__"]
 }
