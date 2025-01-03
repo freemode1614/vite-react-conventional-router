@@ -47,9 +47,15 @@ export default function ConventionalRouter(
       config.base = BASE_NAME || "";
       return config;
     },
+    /**
+     * Get vite dev server instance.
+     */
     configureServer(server) {
       devServer = server;
     },
+    /**
+     * Auto-gen route config access by vitural module "virtual:routes"
+     */
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
         log.info("Read virtual routes");
@@ -58,6 +64,9 @@ export default function ConventionalRouter(
 
       return undefined;
     },
+    /**
+     * Parse folder structure to generate code.
+     */
     load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
         const allRoutes = collectRoutePages(include, exclude);
