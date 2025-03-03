@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.11",
-    "@moccona/eslint-config": "^0.3.12",
+    "@moccona/eslint-config": "^0.4.2",
     "@moccona/prettierrc": "^0.0.4",
     "@playwright/test": "^1.49.1",
     "@types/glob-to-regexp": "^0.4.4",
@@ -64,3 +64,4 @@
   "prettier": "@moccona/prettierrc",
   "packageManager": "pnpm@9.7.1"
 }
+

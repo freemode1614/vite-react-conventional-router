@@ -158,9 +158,12 @@ export default function ConventionalRouter(
           finalRoutes.push({ ...notFoundRoute, path: "*" });
         }
 
+        const imports: string[] = [];
+        const routeString = stringifyRoutes(finalRoutes, imports);
         return {
           code: `
-          const routes = ${stringifyRoutes(finalRoutes)};
+          ${imports.join("\n")}
+          const routes = ${routeString};
           if(import.meta.env.DEV) {
             console.log(routes);
           }

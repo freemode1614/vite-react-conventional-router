@@ -39,7 +39,6 @@ export const collectRoutePages = (
       pageModules.push("/" + file.join(ROUTE_PATH_SEP));
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       const group = files.map((file) => file[0]);
       if (new Set(group).size > 1) {
@@ -60,7 +59,7 @@ export const collectRoutePages = (
     .map((route, index) => {
       return {
         path: route,
-        element: pageModules[index],
+        element: nodepath.resolve(pageModules[index]),
       };
     });
 };
@@ -199,6 +198,7 @@ export const arrangeRoutes = (
     path: ROUTE_PATH_SEP + parent.path!,
     loader: loader?.element,
     handle: handle?.element,
+    ErrorBoundary: errorBoundary?.element,
     children: subs.map((sub) =>
       arrangeRoutes(
         isolateRoutes,
@@ -207,7 +207,6 @@ export const arrangeRoutes = (
         sideEffectRoutes,
       ),
     ),
-    ErrorBoundary: errorBoundary?.element,
   });
 
   if (layout) {
@@ -227,47 +226,50 @@ export const arrangeRoutes = (
 /**
  * Stringify routes data.
  */
-export const stringifyRoutes = (routes: NonIndexRouteObject[]): string => {
+export const stringifyRoutes = (
+  routes: NonIndexRouteObject[],
+  imports: string[] = [],
+): string => {
   const code = routes
     .map((route) => {
-      const errorBoundary = route.ErrorBoundary
-        ? [
-            `const { default: ErrorBoundary_ } = await import("${route.ErrorBoundary}")`,
-            `ErrorBoundary = ErrorBoundary_;`,
-          ].join("\n;")
-        : "";
+      const length_ = imports.length;
 
-      const handle = route.handle
-        ? [
-            `const { default: handle_ } = await import("${route.handle}");`,
-            `handle = handle_;`,
-          ].join("\n;")
-        : "";
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const { loader, handle, ErrorBoundary, action } = route;
 
-      const loader = route.loader
-        ? [
-            "async (...args) => {",
-            `const { default: loader_ } = await import("${route.loader}");`,
-            "return loader_(...args);",
-            "}",
-          ].join("\n")
-        : "undefined";
+      imports.push(
+        `import * as element${length_} from "${route.element as string}";`,
+      );
+
+      if (loader)
+        imports.push(
+          `import loader${length_} from "${loader as unknown as string}";`,
+        );
+
+      if (handle)
+        imports.push(
+          `import handle${length_} from "${handle as unknown as string}";`,
+        );
+
+      if (ErrorBoundary)
+        imports.push(
+          `import ErrorBoundary${length_} from "${ErrorBoundary as unknown as string}";`,
+        );
+
+      if (action)
+        imports.push(
+          `import action${length_} from "${action as unknown as string}";`,
+        );
 
       return `{
         path: "${route.path}",
-        loader: ${loader},
-        async lazy(){
-          const { default: Component, initProps ,...rest }  = await import("${route.element as string}");
-          let ErrorBoundary = undefined;
-          let loader = undefined;
-          let handle = undefined;
-          ${errorBoundary}
-          ${handle}
-          return {
-            ...rest, handle, ErrorBoundary, Component
-          }
-        },
-        children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[])}
+        loader: ${loader ? `loader${length_}` : `element${length_}.loader`},
+        action: ${action ? `action${length_}` : `element${length_}.action`} ,
+        handle: ${handle ? `handle${length_}` : `element${length_}.handle`},
+        Component: element${length_}.default,
+        ErrorBoundary: ${ErrorBoundary ? `ErrorBoundary${length_}` : `element${length_}.ErrorBoundary`}  ,
+        shouldRevalidate: element${length_}.shouldRevalidate,
+        children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports)}
       }`;
     })
     .join(",");

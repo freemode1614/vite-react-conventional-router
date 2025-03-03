@@ -1,4 +1,4 @@
-import { config } from "@moccona/eslint-config/flat";
+import { default as config } from "@moccona/eslint-config/flat/node";
 
 /**
  */
