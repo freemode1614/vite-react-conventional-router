@@ -1,3 +1,5 @@
+import nodepath from "node:path";
+
 import {
   Browser,
   BrowserContext,
@@ -6,8 +8,24 @@ import {
   Page,
   test,
 } from "@playwright/test";
+import { createServer, type ViteDevServer } from "vite";
 
 const port = 8888;
+let viteServer: ViteDevServer | undefined;
+
+test.beforeAll(async () => {
+  viteServer = await createServer({
+    configFile: nodepath.resolve(process.cwd(), "example/react/vite.config.ts"),
+  });
+});
+
+test.afterAll(async () => {
+  if (viteServer) {
+    await viteServer.close();
+  }
+
+  viteServer = undefined;
+});
 
 test.describe("react e2e test", () => {
   // let devServer: ViteDevServer;
