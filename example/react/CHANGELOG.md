@@ -1,5 +1,11 @@
 # react-example
 
+## 0.3.0
+
+### Minor Changes
+
+- chore: do not lazy by default
+
 ## 0.2.2
 
 ### Patch Changes
