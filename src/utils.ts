@@ -27,16 +27,14 @@ export const collectRoutePages = (
   let routes: string[] = [];
 
   for (const pattern of pages) {
-    let files = fg
-      .sync(pattern, {
-        deep: Infinity,
-        ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore],
-      })
-      .map((file) => file.split(ROUTE_PATH_SEP));
+    let files = fg.sync(pattern, {
+      deep: Infinity,
+      ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore],
+    });
 
     for (const file of files) {
       // Keep Relative Path For Both Windows, Linux and MacOS
-      pageModules.push("./" + file.join(ROUTE_PATH_SEP));
+      pageModules.push(nodepath.resolve(file));
     }
 
     while (true) {
@@ -48,10 +46,7 @@ export const collectRoutePages = (
       }
     }
 
-    routes = [
-      ...routes,
-      ...files.map((file) => file.join(ROUTE_PATH_SEP)).flat(),
-    ];
+    routes = [...routes, ...files.map((file) => file).flat()];
   }
 
   return routes
