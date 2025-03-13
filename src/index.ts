@@ -161,7 +161,6 @@ export default function ConventionalRouter(
 
         const imports: string[] = [];
         const routeString = stringifyRoutes(finalRoutes, imports);
-        console.log("imports", imports);
         return {
           code: `
           ${imports.join("\n")}

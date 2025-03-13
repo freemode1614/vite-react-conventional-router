@@ -220,7 +220,7 @@ export const arrangeRoutes = (
 };
 
 const fileProtocol = (path: string) => {
-  return new URL(`file://${path}`).href;
+  return process.platform === "win32" ? new URL(`file://${path}`).href : path;
 };
 
 /**
