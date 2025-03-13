@@ -41,6 +41,7 @@ export default function ConventionalRouter(
 
   return {
     name: PLUGIN_NAME,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     config(config, _env) {
       // const envs = loadEnv(env.mode, config.envDir ?? ".", "");
       // const { BASE_NAME } = envs;
