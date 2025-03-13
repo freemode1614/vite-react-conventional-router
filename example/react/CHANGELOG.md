@@ -1,5 +1,11 @@
 # react-example
 
+## 0.4.0
+
+### Minor Changes
+
+- do not lazy by default
+
 ## 0.3.0
 
 ### Minor Changes
