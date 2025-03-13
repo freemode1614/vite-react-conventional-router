@@ -1,6 +1,6 @@
 {
   "name": "@moccona/vite-plugin-react-conventional-router",
-  "version": "0.1.2",
+  "version": "0.2.1",
   "description": "Vite plugin for react conventional router",
   "type": "module",
   "publishConfig": {
@@ -64,4 +64,3 @@
   "prettier": "@moccona/prettierrc",
   "packageManager": "pnpm@9.7.1"
 }
-
