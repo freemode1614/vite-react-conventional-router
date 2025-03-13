@@ -41,10 +41,10 @@ export default function ConventionalRouter(
 
   return {
     name: PLUGIN_NAME,
-    config(config, env) {
-      const envs = loadEnv(env.mode, config.envDir ?? ".", "");
-      const { BASE_NAME } = envs;
-      config.base = BASE_NAME || config.base;
+    config(config, _env) {
+      // const envs = loadEnv(env.mode, config.envDir ?? ".", "");
+      // const { BASE_NAME } = envs;
+      // config.base = BASE_NAME || config.base;
       return config;
     },
     /**
