@@ -44,7 +44,7 @@ export default function ConventionalRouter(
     config(config, env) {
       const envs = loadEnv(env.mode, config.envDir ?? ".", "");
       const { BASE_NAME } = envs;
-      config.base = BASE_NAME || "";
+      config.base = BASE_NAME || config.base;
       return config;
     },
     /**
