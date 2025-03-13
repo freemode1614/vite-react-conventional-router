@@ -219,6 +219,10 @@ export const arrangeRoutes = (
   return parent;
 };
 
+const fileProtocol = (path: string) => {
+  return new URL(`file://${path}`).href;
+};
+
 /**
  * Stringify routes data.
  */
@@ -234,27 +238,27 @@ export const stringifyRoutes = (
       const { loader, handle, ErrorBoundary, action, element } = route;
 
       imports.push(
-        `import * as element${length_} from "${element as string}";`,
+        `import * as element${length_} from "${fileProtocol(element as string)}";`,
       );
 
       if (loader)
         imports.push(
-          `import loader${length_} from "${loader as unknown as string}";`,
+          `import loader${length_} from "${fileProtocol(loader as unknown as string)}";`,
         );
 
       if (handle)
         imports.push(
-          `import handle${length_} from "${handle as unknown as string}";`,
+          `import handle${length_} from "${fileProtocol(handle as unknown as string)}";`,
         );
 
       if (ErrorBoundary)
         imports.push(
-          `import ErrorBoundary${length_} from "${ErrorBoundary as unknown as string}";`,
+          `import ErrorBoundary${length_} from "${fileProtocol(ErrorBoundary as unknown as string)}";`,
         );
 
       if (action)
         imports.push(
-          `import action${length_} from "${action as unknown as string}";`,
+          `import action${length_} from "${fileProtocol(action as unknown as string)}";`,
         );
 
       return `{
@@ -297,7 +301,7 @@ export const filePathToRoutePath = (filepath: string) => {
     : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
 
   return path_
-    .split(FILE_PATH_SEP)
+    .split(ROUTE_PATH_SEP)
     .map((seg) => {
       if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
         return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
