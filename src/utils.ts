@@ -7,6 +7,7 @@ import {
   DEFAULT_IGNORE_PATTERN,
   DYNAMIC_ROUTE_FLAG,
   ERROR_BOUNDARY_FILE_NAME,
+  FILE_PATH_SEP,
   HANDLE_FILE_NAME,
   LAYOUT_FILE_NAME,
   LOADER_FILE_NAME,
@@ -289,14 +290,14 @@ export const filePathToRoutePath = (filepath: string) => {
   filepath =
     filepath
       .replace(nodepath.extname(filepath), "")
-      .replaceAll(".", ROUTE_PATH_SEP) + nodepath.extname(filepath);
+      .replaceAll(".", FILE_PATH_SEP) + nodepath.extname(filepath);
 
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
     ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
     : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
 
   return path_
-    .split(ROUTE_PATH_SEP)
+    .split(FILE_PATH_SEP)
     .map((seg) => {
       if (seg.startsWith(DYNAMIC_ROUTE_FLAG)) {
         return seg.replace(DYNAMIC_ROUTE_FLAG, ":");
