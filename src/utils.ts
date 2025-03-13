@@ -36,7 +36,7 @@ export const collectRoutePages = (
 
     for (const file of files) {
       // Keep Relative Path For Both Windows, Linux and MacOS
-      pageModules.push("/" + file.join(ROUTE_PATH_SEP));
+      pageModules.push("./" + file.join(ROUTE_PATH_SEP));
     }
 
     while (true) {
@@ -235,10 +235,10 @@ export const stringifyRoutes = (
       const length_ = imports.length;
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const { loader, handle, ErrorBoundary, action } = route;
+      const { loader, handle, ErrorBoundary, action, element } = route;
 
       imports.push(
-        `import * as element${length_} from "${route.element as string}";`,
+        `import * as element${length_} from "${element as string}";`,
       );
 
       if (loader)

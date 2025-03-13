@@ -2,7 +2,7 @@ import * as logger from "@moccona/logger";
 import { createFilter } from "@rollup/pluginutils";
 import { type Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
-import { loadEnv, type Plugin, type ViteDevServer } from "vite";
+import { type Plugin, type ViteDevServer } from "vite";
 
 import { PLUGIN_NAME, PLUGIN_VIRTUAL_MODULE_NAME } from "@/constants";
 import {
@@ -161,6 +161,7 @@ export default function ConventionalRouter(
 
         const imports: string[] = [];
         const routeString = stringifyRoutes(finalRoutes, imports);
+        console.log("imports", imports);
         return {
           code: `
           ${imports.join("\n")}
