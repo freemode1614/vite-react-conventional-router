@@ -16,6 +16,7 @@ import {
 type ConventionalRouterProps = {
   include: Pattern | Pattern[];
   exclude: Pattern | Pattern[];
+  lazy: boolean;
 };
 
 const { createScopedLogger } = logger;
@@ -25,7 +26,7 @@ export const log = createScopedLogger(PLUGIN_NAME);
 export default function ConventionalRouter(
   options?: Partial<ConventionalRouterProps>,
 ): Plugin {
-  options = { include: [], exclude: [], ...(options ?? {}) };
+  options = { include: [], exclude: [], lazy: false, ...(options ?? {}) };
 
   let { include } = options;
   let { exclude } = options;
