@@ -1,6 +1,6 @@
 import { useLoaderData, useNavigate } from "react-router";
 
-export const shouldValidate = false;
+export const shouldRevalidate = false;
 
 Component.displayName = 'index';
 

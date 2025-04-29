@@ -12,7 +12,8 @@ export default defineConfig({
     // @ts-expect-error No Error
     conventionalRouter({
       include: ["src/pages/**"],
-      exclude: ["src/**/components/**", "src/**/hooks/**"]
+      exclude: ["src/**/components/**", "src/**/hooks/**"],
+      lazy: true
     })
   ],
 })

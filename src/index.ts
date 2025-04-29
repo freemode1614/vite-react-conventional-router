@@ -161,7 +161,7 @@ export default function ConventionalRouter(
         }
 
         const imports: string[] = [];
-        const routeString = stringifyRoutes(finalRoutes, imports);
+        const routeString = stringifyRoutes(finalRoutes, imports, options.lazy);
         return {
           code: `
           ${imports.join("\n")}

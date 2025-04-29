@@ -229,6 +229,7 @@ const fileProtocol = (path: string) => {
 export const stringifyRoutes = (
   routes: NonIndexRouteObject[],
   imports: string[] = [],
+  lazy = false,
 ): string => {
   const code = routes
     .map((route) => {
@@ -236,10 +237,6 @@ export const stringifyRoutes = (
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { loader, handle, ErrorBoundary, action, element } = route;
-
-      imports.push(
-        `import * as element${length_} from "${fileProtocol(element as string)}";`,
-      );
 
       if (loader)
         imports.push(
@@ -261,16 +258,34 @@ export const stringifyRoutes = (
           `import action${length_} from "${fileProtocol(action as unknown as string)}";`,
         );
 
-      return `{
-        path: "${route.path}",
-        loader: ${loader ? `loader${length_}` : `element${length_}.loader`},
-        action: ${action ? `action${length_}` : `element${length_}.action`} ,
-        handle: ${handle ? `handle${length_}` : `element${length_}.handle`},
-        Component: element${length_}.default,
-        ErrorBoundary: ${ErrorBoundary ? `ErrorBoundary${length_}` : `element${length_}.ErrorBoundary`}  ,
-        shouldRevalidate: element${length_}.shouldRevalidate,
-        children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports)}
-      }`;
+      if (lazy) {
+        return `{
+          path: "${route.path}",
+          lazy: async () => {
+            const element = await import("${fileProtocol(element as string)}");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              loader: ${loader ? `loader${length_}` : `element.loader`},
+              action: ${action ? `action${length_}` : `element.action`},
+              handle: ${handle ? `handle${length_}` : `element.handle`},
+              ErrorBoundary: ${ErrorBoundary ? `ErrorBoundary${length_}` : `element.ErrorBoundary`},
+            };
+          },
+          children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports, lazy)}
+        }`;
+      } else {
+        return `{
+          path: "${route.path}",
+          shouldRevalidate: element${length_}.shouldRevalidate,
+          loader: ${loader ? `loader${length_}` : `element${length_}.loader`},
+          action: ${action ? `action${length_}` : `element${length_}.action`} ,
+          handle: ${handle ? `handle${length_}` : `element${length_}.handle`},
+          Component: element${length_}.default,
+          ErrorBoundary: ${ErrorBoundary ? `ErrorBoundary${length_}` : `element${length_}.ErrorBoundary`}  ,
+          children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports, lazy)}
+        }`;
+      }
     })
     .join(",");
 
