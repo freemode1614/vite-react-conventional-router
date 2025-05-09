@@ -124,4 +124,4 @@ export default function App() {
 - [x] Support optional route.
 - [x] Split loader/action into individual file.
 - [x] Support reading router configuration from .env file.
-- [ ] Migrate react-router from v6 to v7.
+- [x] Migrate react-router from v6 to v7.
