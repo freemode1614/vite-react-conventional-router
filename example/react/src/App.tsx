@@ -2,6 +2,7 @@ import routes from "virtual:routes";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import "./index.css";
 
+// @ts-expect-error ignore below error
 const router = createBrowserRouter(routes);
 
 function App() {

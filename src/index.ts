@@ -16,28 +16,63 @@ import {
 type ConventionalRouterProps = {
   include: Pattern | Pattern[];
   exclude: Pattern | Pattern[];
+  /**
+   * Enable lazy load
+   **/
   lazy: boolean;
 };
 
 const { createScopedLogger } = logger;
 
-export const log = createScopedLogger(PLUGIN_NAME);
+export const pluginlog = createScopedLogger(PLUGIN_NAME);
+
+/**
+ *
+ * Create a file filter base on the include and exclude.
+ *
+ */
+const createFileFilter = (
+  include: ConventionalRouterProps["include"] = [],
+  exclude: ConventionalRouterProps["exclude"] = [],
+) => createFilter(include, exclude);
+
+/**
+ *
+ * Merge plugin options with default.
+ *
+ */
+const mergeDefaultOptions = (
+  options: Partial<ConventionalRouterProps>,
+): Omit<ConventionalRouterProps, "include" | "exclude"> & {
+  include: Pattern[];
+  exclude: Pattern[];
+} => {
+  const _opt_ = Object.assign(
+    {},
+    {
+      include: [],
+      exclude: [],
+      lazy: false,
+    },
+    options,
+  );
+
+  if (!Array.isArray(_opt_.include)) {
+    _opt_.include = [_opt_.include];
+  }
+
+  if (!Array.isArray(_opt_.exclude)) {
+    _opt_.exclude = [_opt_.exclude];
+  }
+
+  return _opt_;
+};
 
 export default function ConventionalRouter(
-  options?: Partial<ConventionalRouterProps>,
+  options: Partial<ConventionalRouterProps> = {},
 ): Plugin {
-  options = { include: [], exclude: [], lazy: false, ...(options ?? {}) };
-
-  let { include } = options;
-  let { exclude } = options;
-
-  // Filtering the real page files.
-  const filter = createFilter(include, exclude);
-
-  // Constrcut filter patterns
-  include = (Array.isArray(include) ? include : [include]) as string[];
-  exclude = (Array.isArray(exclude) ? exclude : [exclude]) as string[];
-
+  const _options = mergeDefaultOptions(options);
+  const filter = createFileFilter(_options.include, _options.exclude);
   let devServer: ViteDevServer;
 
   return {
@@ -60,7 +95,7 @@ export default function ConventionalRouter(
      */
     resolveId(source) {
       if (source === PLUGIN_VIRTUAL_MODULE_NAME) {
-        log.info("Read virtual routes");
+        pluginlog.info("Read virtual routes");
         return source;
       }
 
@@ -71,7 +106,7 @@ export default function ConventionalRouter(
      */
     load(id) {
       if (id === PLUGIN_VIRTUAL_MODULE_NAME) {
-        const allRoutes = collectRoutePages(include, exclude);
+        const allRoutes = collectRoutePages(_options.include, _options.exclude);
         const subRoutesPathAppendToParent: string[] = [];
 
         /**
@@ -128,7 +163,6 @@ export default function ConventionalRouter(
 
         subRoutesPathAppendToParent.length = 0;
 
-        // 2.
         intermediaRoutes
           // Second filter
           .filter((r) => r.path!.split("/").length > 2)

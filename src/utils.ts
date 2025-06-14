@@ -1,6 +1,6 @@
 import nodepath from "node:path";
 
-import fg, { Pattern } from "fast-glob";
+import fg, { type Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
 
 import {
@@ -16,6 +16,25 @@ import {
   PLUGIN_MAIN_PAGE_FILE,
   ROUTE_PATH_SEP,
 } from "@/constants";
+import { pluginlog } from "@/index";
+
+function globSync(pattern: Pattern | Pattern[], ignore: Pattern | Pattern[]) {
+  const files = fg.sync(pattern, {
+    deep: Infinity,
+    ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore],
+  });
+
+  pluginlog.debug(
+    `Pattern: ${pattern}`,
+    "\n",
+    `Ignore: ${ignore}`,
+    "\n",
+    `Files: ${files.join("\n")}`,
+    `----------------------------------------------------`,
+  );
+
+  return files;
+}
 
 /**
  * Collect files from FS by fast-glob.
@@ -24,19 +43,16 @@ export const collectRoutePages = (
   pages: Pattern[],
   ignore: Pattern[] = [],
 ): NonIndexRouteObject[] => {
-  const pageModules: string[] = [];
+  let pageModules: string[] = [];
   let routes: string[] = [];
 
   for (const pattern of pages) {
-    let files = fg.sync(pattern, {
-      deep: Infinity,
-      ignore: [...DEFAULT_IGNORE_PATTERN, ...ignore],
-    });
+    let files = globSync(pattern, ignore);
 
-    for (const file of files) {
-      // Keep Relative Path For Both Windows, Linux and MacOS
-      pageModules.push(nodepath.resolve(file));
-    }
+    pageModules = [
+      ...pageModules,
+      ...files.map((file) => nodepath.resolve(file)),
+    ];
 
     while (true) {
       const group = files.map((file) => file[0]);
@@ -142,9 +158,9 @@ type CollectReturn = {
   [Key in keyof typeof reserved_root_field_keys]?: NonIndexRouteObject;
 } & { routes?: NonIndexRouteObject[] };
 
-export function collectRootRouteRelatedRoute(
+export const collectRootRouteRelatedRoute = (
   routes: NonIndexRouteObject[],
-): CollectReturn {
+): CollectReturn => {
   return Object.assign(
     Object.keys(reserved_root_field_keys).reduce<CollectReturn>(
       (object, fieldKey) => ({
@@ -159,10 +175,10 @@ export function collectRootRouteRelatedRoute(
       ),
     },
   );
-}
+};
 
 /**
- * Arrange routes.
+ * Arrange routes. Flat to tree
  */
 export const arrangeRoutes = (
   isolateRoutes: NonIndexRouteObject[],
@@ -219,6 +235,7 @@ export const arrangeRoutes = (
   return parent;
 };
 
+// For window capability
 const fileProtocol = (path: string) => {
   return process.platform === "win32" ? new URL(`file://${path}`).href : path;
 };
