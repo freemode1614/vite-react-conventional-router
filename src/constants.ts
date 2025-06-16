@@ -14,6 +14,7 @@ export const HANDLE_FILE_NAME = "handle";
 export const OPTIONAL_ROUTE_FLAG = "$";
 export const DYNAMIC_ROUTE_FLAG = "@";
 export const SPLAT_ROUTE_FLAG = "_";
+export const SPECIAL_PATH_SPLIT = ".";
 
 export const FILE_PATH_SEP = nodepath.sep;
 export const ROUTE_PATH_SEP = "/";

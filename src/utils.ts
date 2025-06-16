@@ -15,6 +15,7 @@ import {
   OPTIONAL_ROUTE_FLAG,
   PLUGIN_MAIN_PAGE_FILE,
   ROUTE_PATH_SEP,
+  SPECIAL_PATH_SPLIT,
 } from "@/constants";
 import { pluginlog } from "@/index";
 
@@ -95,6 +96,20 @@ export const isFieldKeyRoute = (
   routeB: NonIndexRouteObject,
   fieldKey: string,
 ) => {
+  if (routeA.path === "/" || routeA.path === "") {
+    console.log(
+      "fieldKey",
+      fieldKey,
+      "\n",
+      "routeA ~>",
+      routeA,
+      "\n",
+      "routeB ~>",
+      routeB,
+      "\n",
+    );
+  }
+
   if (
     nodepath.dirname(routeA.element as string) ===
     nodepath.dirname(routeB.element! as string)
@@ -104,7 +119,7 @@ export const isFieldKeyRoute = (
       routeB.element! as string,
     );
 
-    if (routeA.path!.split(ROUTE_PATH_SEP).length === 1 && routeA.path === "") {
+    if (routeA.path === "" && routeB.path!.split("/").length === 1) {
       return condition;
     }
 
@@ -193,8 +208,8 @@ export const arrangeRoutes = (
   const { handle, loader, errorBoundary, layout } = Object.keys(
     reserved_route_filed_keys,
   ).reduce<SideEffects>(
-    (object, fieldKey) => ({
-      ...object,
+    (obj, fieldKey) => ({
+      ...obj,
       [fieldKey]: sideEffectRoutes.find((route) => {
         return isFieldKeyRoute(parent, route, fieldKey);
       }),
@@ -323,14 +338,15 @@ export const stripSlash = (filepath: string) => {
  * Route path generate by file path.
  */
 export const filePathToRoutePath = (filepath: string) => {
+  const extname = nodepath.extname(filepath);
   filepath =
     filepath
-      .replace(nodepath.extname(filepath), "")
-      .replaceAll(".", FILE_PATH_SEP) + nodepath.extname(filepath);
+      .replace(extname, "")
+      .replaceAll(SPECIAL_PATH_SPLIT, FILE_PATH_SEP) + extname;
 
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
     ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
-    : stripSlash(filepath.replace(nodepath.extname(filepath), ""));
+    : stripSlash(filepath.replace(extname, ""));
 
   return path_
     .split(ROUTE_PATH_SEP)
