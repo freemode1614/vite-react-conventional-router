@@ -135,5 +135,5 @@ dist
 /playwright/.cache/
 
 # build assets
-npm/*
+npm
 .aider*
