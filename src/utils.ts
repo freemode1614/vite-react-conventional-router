@@ -96,20 +96,6 @@ export const isFieldKeyRoute = (
   routeB: NonIndexRouteObject,
   fieldKey: string,
 ) => {
-  if (routeA.path === "/" || routeA.path === "") {
-    console.log(
-      "fieldKey",
-      fieldKey,
-      "\n",
-      "routeA ~>",
-      routeA,
-      "\n",
-      "routeB ~>",
-      routeB,
-      "\n",
-    );
-  }
-
   if (
     nodepath.dirname(routeA.element as string) ===
     nodepath.dirname(routeB.element! as string)
