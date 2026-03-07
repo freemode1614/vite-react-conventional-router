@@ -137,3 +137,6 @@ dist
 # build assets
 npm
 .aider*
+
+# Vite temp files
+vite.config.ts.timestamp-*.mjs

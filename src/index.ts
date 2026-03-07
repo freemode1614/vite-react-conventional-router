@@ -12,6 +12,7 @@ import {
   collectRoutePages,
   stringifyRoutes,
 } from "@/utils";
+import { logValidationIssues, validateRoutes } from "@/validation";
 
 type ConventionalRouterProps = {
   include: Pattern | Pattern[];
@@ -119,6 +120,20 @@ export default function ConventionalRouter(
         } = collectRootRouteRelatedRoute(allRoutes);
 
         const sideEffectRoutes = collectRouteFieldKeyRoute(routes);
+
+        // Validate routes and log any issues
+        const validation = validateRoutes(allRoutes, sideEffectRoutes);
+        if (validation.issues.length > 0) {
+          logValidationIssues(validation);
+        }
+
+        // Throw error if there are critical issues
+        if (!validation.valid) {
+          const errorCount = validation.issues.filter((i) => i.severity === "error").length;
+          throw new Error(
+            `Route validation failed with ${errorCount} error(s). Check console for details.`,
+          );
+        }
 
         // 404 Page For Route.
         if (notFoundRoute) {
