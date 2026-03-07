@@ -166,11 +166,7 @@ export function validateRoutes(
     });
   }
 
-  // Check for orphaned field keys
-  const nonFieldKeyPaths = new Set(
-    allRoutes.filter((r) => !sideEffectRoutes.includes(r)).map((r) => r.path),
-  );
-
+  // Check for orphaned field keys and typos
   for (const route of sideEffectRoutes) {
     const basename = nodepath.basename(route.element as string);
 
@@ -185,19 +181,9 @@ export function validateRoutes(
       });
     }
 
-    // Check if the field key's parent route exists
-    const routeDir = nodepath.dirname(route.element as string);
-    const parentDir = nodepath.dirname(routeDir);
-
-    // Field key should have a matching parent route
-    const hasMatchingRoute = Array.from(nonFieldKeyPaths).some((path) => {
-      if (!path) return false;
-      const routePath = nodepath.normalize(routeDir);
-      // Simple check: the route directory should contain a page file
-      return true; // Simplified - actual check done elsewhere
-    });
-
-    if (!hasMatchingRoute && basename.includes(".")) {
+    // Check if route-level field key has matching parent route
+    // e.g., home.layout.tsx should have home.tsx or home/index.tsx
+    if (basename.includes(".")) {
       // Field key is like home.layout.tsx - check if home exists
       const baseRouteName = basename.split(".")[0];
       const expectedPath = nodepath.join(
