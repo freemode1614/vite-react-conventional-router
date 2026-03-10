@@ -1,10 +1,10 @@
-import * as logger from "@moccona/logger";
 import { createFilter } from "@rollup/pluginutils";
 import { type Pattern } from "fast-glob";
 import type { NonIndexRouteObject } from "react-router";
 import { type Plugin, type ViteDevServer } from "vite";
 
 import { PLUGIN_NAME, PLUGIN_VIRTUAL_MODULE_NAME } from "@/constants";
+import { pluginlog } from "@/logger";
 import {
   arrangeRoutes,
   collectRootRouteRelatedRoute,
@@ -22,10 +22,6 @@ type ConventionalRouterProps = {
    **/
   lazy: boolean;
 };
-
-const { createScopedLogger } = logger;
-
-export const pluginlog = createScopedLogger(PLUGIN_NAME);
 
 /**
  *
@@ -117,7 +113,19 @@ export default function ConventionalRouter(
           routes = [],
           "404": notFoundRoute,
           layout: rootLayoutRoute,
+          loader: rootLoaderRoute,
+          handle: rootHandleRoute,
         } = collectRootRouteRelatedRoute(allRoutes);
+
+        // Merge root field keys (loader, handle) into root layout route
+        if (rootLayoutRoute) {
+          if (rootLoaderRoute) {
+            (rootLayoutRoute as NonIndexRouteObject).loader = rootLoaderRoute.element as unknown as NonIndexRouteObject["loader"];
+          }
+          if (rootHandleRoute) {
+            (rootLayoutRoute as NonIndexRouteObject).handle = rootHandleRoute.element;
+          }
+        }
 
         const sideEffectRoutes = collectRouteFieldKeyRoute(routes);
 

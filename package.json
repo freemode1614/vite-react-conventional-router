@@ -42,9 +42,8 @@
     "glob-to-regexp": "^0.4.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.6",
     "@changesets/cli": "^2.29.4",
-    "@moccona/eslint-config": "^1.0.6",
-    "@moccona/preset-config": "^0.0.5",
     "@playwright/test": "^1.53.0",
     "@types/glob-to-regexp": "^0.4.4",
     "@types/node": "^20.19.0",
@@ -67,6 +66,5 @@
     "react-router": "^6 || ^7",
     "vite": "5 || 6"
   },
-  "prettier": "@moccona/preset-config/prettierrc",
   "packageManager": "pnpm@10.9.0"
 }

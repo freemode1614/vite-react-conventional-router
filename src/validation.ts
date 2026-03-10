@@ -2,7 +2,7 @@ import nodepath from "node:path";
 
 import type { NonIndexRouteObject } from "react-router";
 
-import { pluginlog } from "@/index";
+import { pluginlog } from "@/logger";
 
 /**
  * Represents a route conflict where multiple files map to the same route path.

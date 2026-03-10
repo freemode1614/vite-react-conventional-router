@@ -17,7 +17,7 @@ import {
   ROUTE_PATH_SEP,
   SPECIAL_PATH_SPLIT,
 } from "@/constants";
-import { pluginlog } from "@/index";
+import { pluginlog } from "@/logger";
 
 function globSync(pattern: Pattern | Pattern[], ignore: Pattern | Pattern[]) {
   const files = fg.sync(pattern, {
@@ -105,7 +105,25 @@ export const isFieldKeyRoute = (
       routeB.element! as string,
     );
 
-    if (routeA.path === "" && routeB.path!.split("/").length === 1) {
+    // Get route name from element path (e.g., "index" from ".../index.tsx")
+    const routeABaseName = nodepath.basename(
+      routeA.element as string,
+      nodepath.extname(routeA.element as string),
+    );
+    // For index.tsx, the route name is treated as empty (root)
+    const routeAName = routeABaseName === PLUGIN_MAIN_PAGE_FILE.replace(".tsx", "")
+      ? ""
+      : routeABaseName;
+
+    // For root route (path is ""), only match if routeB's path is exactly the fieldKey
+    // e.g., "loader" matches root, but "page4/loader" (from page4.loader.ts) does not
+    if (routeA.path === "") {
+      return condition && routeB.path === fieldKey;
+    }
+
+    // For index routes, match field keys like "index/loader"
+    // routeB.path should be "[routeAName]/[fieldKey]"
+    if (routeB.path === `${routeAName}/${fieldKey}`) {
       return condition;
     }
 
@@ -242,39 +260,121 @@ const fileProtocol = (path: string) => {
 };
 
 /**
+ * Import tracker for generating unique import identifiers.
+ * Prevents duplicate imports and ensures correct reference indices.
+ */
+type ImportTracker = {
+  loader: Map<string, string>;
+  handle: Map<string, string>;
+  action: Map<string, string>;
+  errorBoundary: Map<string, string>;
+};
+
+const createImportTracker = (): ImportTracker => ({
+  loader: new Map(),
+  handle: new Map(),
+  action: new Map(),
+  errorBoundary: new Map(),
+});
+
+const getOrCreateImport = (
+  tracker: Map<string, string>,
+  path: string,
+  prefix: string,
+  imports: string[],
+): string => {
+  if (tracker.has(path)) {
+    return tracker.get(path)!;
+  }
+  const index = tracker.size;
+  const identifier = `${prefix}${index}`;
+  tracker.set(path, identifier);
+  imports.push(
+    `import ${identifier} from "${fileProtocol(path)}";`,
+  );
+  return identifier;
+};
+
+/**
  * Stringify routes data.
  */
 export const stringifyRoutes = (
   routes: NonIndexRouteObject[],
   imports: string[] = [],
   lazy = false,
+  importTracker: ImportTracker = createImportTracker(),
 ): string => {
   const code = routes
     .map((route) => {
-      const length_ = imports.length;
-
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { loader, handle, ErrorBoundary, action, element } = route;
 
-      if (loader)
-        imports.push(
-          `import loader${length_} from "${fileProtocol(loader as unknown as string)}";`,
-        );
+      // Get or create unique import identifiers
+      const loaderRef = loader
+        ? getOrCreateImport(
+            importTracker.loader,
+            loader as string,
+            "loader",
+            imports,
+          )
+        : null;
 
-      if (handle)
-        imports.push(
-          `import handle${length_} from "${fileProtocol(handle as unknown as string)}";`,
-        );
+      const handleRef = handle
+        ? getOrCreateImport(
+            importTracker.handle,
+            handle as string,
+            "handle",
+            imports,
+          )
+        : null;
 
-      if (ErrorBoundary)
-        imports.push(
-          `import ErrorBoundary${length_} from "${fileProtocol(ErrorBoundary as unknown as string)}";`,
-        );
+      const actionRef = action
+        ? getOrCreateImport(
+            importTracker.action,
+            action as string,
+            "action",
+            imports,
+          )
+        : null;
 
-      if (action)
+      const errorBoundaryRef = ErrorBoundary
+        ? getOrCreateImport(
+            importTracker.errorBoundary,
+            ErrorBoundary as string,
+            "ErrorBoundary",
+            imports,
+          )
+        : null;
+
+      // Generate element import for non-lazy mode
+      const elementIndex = imports.length;
+      if (!lazy) {
         imports.push(
-          `import action${length_} from "${fileProtocol(action as unknown as string)}";`,
+          `import element${elementIndex} from "${fileProtocol(element as string)}";`,
         );
+      }
+
+      // Build lazy route return object conditionally
+      const lazyLoaderProp = loaderRef ? `loader: ${loaderRef},` : "";
+      const lazyActionProp = actionRef ? `action: ${actionRef},` : "";
+      const lazyHandleProp = handleRef ? `handle: ${handleRef},` : "";
+      const lazyErrorBoundaryProp = errorBoundaryRef
+        ? `ErrorBoundary: ${errorBoundaryRef},`
+        : "";
+
+      // Build non-lazy route properties conditionally
+      const staticLoaderProp = loaderRef
+        ? `loader: ${loaderRef},`
+        : "";
+      const staticActionProp = actionRef
+        ? `action: ${actionRef},`
+        : "";
+      const staticHandleProp = handleRef
+        ? `handle: ${handleRef},`
+        : "";
+      const staticErrorBoundaryProp = errorBoundaryRef
+        ? `ErrorBoundary: ${errorBoundaryRef},`
+        : "";
 
       if (lazy) {
         return `{
@@ -284,24 +384,23 @@ export const stringifyRoutes = (
             return {
               Component: element.default,
               shouldRevalidate: element.shouldRevalidate,
-              loader: ${loader ? `loader${length_}` : `element.loader`},
-              action: ${action ? `action${length_}` : `element.action`},
-              handle: ${handle ? `handle${length_}` : `element.handle`},
-              ErrorBoundary: ${ErrorBoundary ? `ErrorBoundary${length_}` : `element.ErrorBoundary`},
+              ${lazyLoaderProp}
+              ${lazyActionProp}
+              ${lazyHandleProp}
+              ${lazyErrorBoundaryProp}
             };
           },
-          children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports, lazy)}
+          children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports, lazy, importTracker)}
         }`;
       } else {
         return `{
           path: "${route.path}",
-          shouldRevalidate: element${length_}.shouldRevalidate,
-          loader: ${loader ? `loader${length_}` : `element${length_}.loader`},
-          action: ${action ? `action${length_}` : `element${length_}.action`} ,
-          handle: ${handle ? `handle${length_}` : `element${length_}.handle`},
-          Component: element${length_}.default,
-          ErrorBoundary: ${ErrorBoundary ? `ErrorBoundary${length_}` : `element${length_}.ErrorBoundary`}  ,
-          children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports, lazy)}
+          ${staticLoaderProp}
+          ${staticActionProp}
+          ${staticHandleProp}
+          ${staticErrorBoundaryProp}
+          Component: element${elementIndex}.default,
+          children: ${!route.children ? "[]" : stringifyRoutes(route.children as NonIndexRouteObject[], imports, lazy, importTracker)}
         }`;
       }
     })
