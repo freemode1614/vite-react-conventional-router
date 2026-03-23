@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`stringifyRoutes > lazy mode (lazy=true) > snapshot: lazy mode route generation 1`] = `
+"[{
+          path: "home",
+          lazy: async () => {
+            const element = await import("/pages/Home.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              
+              
+              
+              
+            };
+          },
+          children: []
+        },{
+          path: "about",
+          lazy: async () => {
+            const element = await import("/pages/About.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              
+              
+              
+              
+            };
+          },
+          children: []
+        }]"
+`;
+
+exports[`stringifyRoutes > lazy mode (lazy=true) > snapshot: lazy mode route generation 2`] = `[]`;
+
+exports[`stringifyRoutes > normal mode (lazy=false) > snapshot: normal mode route generation 1`] = `
+"[{
+          path: "home",
+          
+          
+          
+          
+          Component: element0.default,
+          children: []
+        },{
+          path: "about",
+          
+          
+          
+          
+          Component: element1.default,
+          children: []
+        }]"
+`;
+
+exports[`stringifyRoutes > normal mode (lazy=false) > snapshot: normal mode route generation 2`] = `
+[
+  "import element0 from "/pages/Home.tsx";",
+  "import element1 from "/pages/About.tsx";",
+]
+`;

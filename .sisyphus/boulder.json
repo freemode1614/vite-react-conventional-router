@@ -1,16 +1,31 @@
 {
-  "active_plan": "/Users/wenpeng.lei/Developers/vite-react-conventional-router/.sisyphus/plans/docs-improvement.md",
-  "started_at": "2026-03-23T05:44:04.631Z",
+  "active_plan": "/Users/wenpeng.lei/Developers/vite-react-conventional-router/.sisyphus/plans/code-refactor.md",
+  "started_at": "2026-03-23T07:08:10.246Z",
   "session_ids": [
-    "ses_2e7645c02ffehuIas6XW1qcjRj",
-    "ses_2e6c58517ffelXj5X8k6C3TpDY",
-    "ses_2e6c47ed0ffeJ4GZNiZQ4tEEPm",
-    "ses_2e6c2e0a6ffeZEgzC7iA041Plh",
-    "ses_2e6c1436affeMYjCR6am74MBFJ",
-    "ses_2e6be5bfbffe6MEsmJPuVbCDfw",
-    "ses_2e6bcb079ffeoeSsxGx3jEUjGA",
-    "ses_2e6ba1e8effePaOwMEJKjIkRm2",
-    "ses_2e6b5d2d3ffelj1el8ihg86eP0"
+    "ses_2e68f9e2bffeUbam6ocQBjkiHw",
+    "ses_2e676d642ffeOfwCqzOpusXVvb",
+    "ses_2e66ea198ffe0tjT9A19whbglF",
+    "ses_2e65939cdffetRq6w0PV5UKMsr",
+    "ses_2e655a4e2ffekFIXGwxmvmNnQZ",
+    "ses_2e6501f35ffe6dm7j76tBPd2Ls",
+    "ses_2e64cd7a9ffeZvmdjsEo0z1bDV",
+    "ses_2e6464cf8ffeVKmR9TRn3tdGZR",
+    "ses_2e640e80fffeGuGiJSkasdxGzg",
+    "ses_2e637c73cffel2O5KFbLSD0zUC",
+    "ses_2e631d756ffeOjrYZJ0RGIANAz",
+    "ses_2e62ab9b1ffeCMAYS9YaJPeC6U",
+    "ses_2e624e5d3ffeVrBdrI7vEKPhS5",
+    "ses_2e620badeffepbOqcgabTDmyJw",
+    "ses_2e61b81f3ffe9Fdwt75FVwyDTK",
+    "ses_2e6143f7fffejhgvbyikpUQDpV",
+    "ses_2e60da558ffe2ZfITHHK434fxH",
+    "ses_2e60d3eecffeollljn0tsnRsEY",
+    "ses_2e60bea9dffes51ZfyIl6bvGSH",
+    "ses_2e60b96a2ffeQJUwSmzGcL09qm",
+    "ses_2e60ba4c5ffevlMoHmr1qvQBkP",
+    "ses_2e60321abffeKfXONI14ddX422",
+    "ses_2e5f3e078ffe7SUAWpLHwPHzqK"
   ],
-  "plan_name": "docs-improvement"
+  "plan_name": "code-refactor",
+  "agent": "atlas"
 }

@@ -1,0 +1,155 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateRouteCode > snapshot: generateRouteCode() output with lazy mode 1`] = `
+"
+          import loader0 from "/pages/user.@id.loader.ts";
+          const routes = [{
+          path: "/",
+          lazy: async () => {
+            const element = await import("/pages/index.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              
+              
+              
+              
+            };
+          },
+          children: []
+        },{
+          path: "/about",
+          lazy: async () => {
+            const element = await import("/pages/about.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              
+              
+              
+              
+            };
+          },
+          children: []
+        },{
+          path: "/user/:id",
+          lazy: async () => {
+            const element = await import("/pages/user.@id.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              loader: loader0,
+              
+              
+              
+            };
+          },
+          children: []
+        },{
+          path: "/dashboard",
+          lazy: async () => {
+            const element = await import("/layouts/Dashboard.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              
+              
+              
+              
+            };
+          },
+          children: [{
+          path: "/dashboard/overview",
+          lazy: async () => {
+            const element = await import("/pages/dashboard/overview.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              
+              
+              
+              
+            };
+          },
+          children: []
+        },{
+          path: "/dashboard/settings",
+          lazy: async () => {
+            const element = await import("/pages/dashboard/settings.tsx");
+            return {
+              Component: element.default,
+              shouldRevalidate: element.shouldRevalidate,
+              
+              
+              
+              
+            };
+          },
+          children: []
+        }]
+        }];
+          export default routes;
+          "
+`;
+
+exports[`generateRouteCode > snapshot: generateRouteCode() output with normal mode 1`] = `
+"
+          import element0 from "/pages/index.tsx";
+import element1 from "/pages/about.tsx";
+import loader0 from "/pages/user.@id.loader.ts";
+import element3 from "/pages/user.@id.tsx";
+import element4 from "/layouts/Dashboard.tsx";
+import element5 from "/pages/dashboard/overview.tsx";
+import element6 from "/pages/dashboard/settings.tsx";
+          const routes = [{
+          path: "/",
+          
+          
+          
+          
+          Component: element0.default,
+          children: []
+        },{
+          path: "/about",
+          
+          
+          
+          
+          Component: element1.default,
+          children: []
+        },{
+          path: "/user/:id",
+          loader: loader0,
+          
+          
+          
+          Component: element3.default,
+          children: []
+        },{
+          path: "/dashboard",
+          
+          
+          
+          
+          Component: element4.default,
+          children: [{
+          path: "/dashboard/overview",
+          
+          
+          
+          
+          Component: element5.default,
+          children: []
+        },{
+          path: "/dashboard/settings",
+          
+          
+          
+          
+          Component: element6.default,
+          children: []
+        }]
+        }];
+          export default routes;
+          "
+`;

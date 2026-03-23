@@ -8,7 +8,7 @@ describe("createConventionalRouter", () => {
 
   beforeEach(() => {
     plugin = ConventionalRouter({
-      include: ["src/pages/**"],
+      include: ["__tests__/fixtures/**"],
       exclude: [],
       lazy: false,
     });
@@ -95,7 +95,7 @@ describe("createConventionalRouter", () => {
 
     it("should trigger server restart when .tsx file is created", async () => {
       const watchChange = plugin.watchChange as any;
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.tsx"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.tsx"), {
         event: "create",
       });
 
@@ -104,7 +104,7 @@ describe("createConventionalRouter", () => {
 
     it("should trigger server restart when .ts file is created", async () => {
       const watchChange = plugin.watchChange as any;
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.ts"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.loader.ts"), {
         event: "create",
       });
 
@@ -113,7 +113,7 @@ describe("createConventionalRouter", () => {
 
     it("should trigger server restart when .tsx file is deleted", async () => {
       const watchChange = plugin.watchChange as any;
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.tsx"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.tsx"), {
         event: "delete",
       });
 
@@ -122,7 +122,7 @@ describe("createConventionalRouter", () => {
 
     it("should trigger server restart when .ts file is deleted", async () => {
       const watchChange = plugin.watchChange as any;
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.ts"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.loader.ts"), {
         event: "delete",
       });
 
@@ -131,7 +131,7 @@ describe("createConventionalRouter", () => {
 
     it("should NOT trigger restart when file is updated (not create/delete)", async () => {
       const watchChange = plugin.watchChange as any;
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.tsx"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.tsx"), {
         event: "update",
       });
 
@@ -140,13 +140,13 @@ describe("createConventionalRouter", () => {
 
     it("should trigger restart for any file type when create/delete event occurs", async () => {
       const watchChange = plugin.watchChange as any;
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.css"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.css"), {
         event: "create",
       });
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.json"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.json"), {
         event: "create",
       });
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.md"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.md"), {
         event: "delete",
       });
 
@@ -157,7 +157,7 @@ describe("createConventionalRouter", () => {
       (mockServer.restart as any).mockRejectedValue(new Error("Restart failed"));
 
       const watchChange = plugin.watchChange as any;
-      await watchChange.call(pluginContext, absolutePath("src/pages/test.tsx"), {
+      await watchChange.call(pluginContext, absolutePath("__tests__/fixtures/test.tsx"), {
         event: "create",
       });
 
@@ -172,7 +172,7 @@ describe("Handle/Loader Integration", () => {
 
   beforeEach(() => {
     plugin = ConventionalRouter({
-      include: ["src/pages/**"],
+      include: ["__tests__/fixtures/**"],
       exclude: [],
       lazy: false,
     });

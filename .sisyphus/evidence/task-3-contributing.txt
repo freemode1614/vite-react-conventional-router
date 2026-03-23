@@ -1,8 +1,0 @@
-## 文档贡献 (Documentation Contributions)
-
-### 文档结构
-
-项目文档位于以下位置：
-
----
-Verification: grep count = 2

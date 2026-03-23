@@ -140,3 +140,6 @@ npm
 
 # Vite temp files
 vite.config.ts.timestamp-*.mjs
+
+# opencode
+.sisyphus
