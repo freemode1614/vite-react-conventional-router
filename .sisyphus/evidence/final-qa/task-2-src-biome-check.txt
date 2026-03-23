@@ -1,0 +1,302 @@
+src/utils.ts:65:29 lint/complexity/noFlatMapIdentity  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Avoid unnecessary callback in flatMap call.
+  
+    63 │     }
+    64 │ 
+  > 65 │     routes = [...routes, ...files.flatMap((file) => file)];
+       │                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    66 │   }
+    67 │ 
+  
+  i You can just use flat to flatten the array.
+  
+  i Unsafe fix: Replace unnecessary flatMap call to flat instead.
+  
+     63  63 │       }
+     64  64 │   
+     65     │ - ····routes·=·[...routes,·...files.flatMap((file)·=>·file)];
+         65 │ + ····routes·=·[...routes,·...files.flat()];
+     66  66 │     }
+     67  67 │   
+  
+
+src/index.ts:84:42 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    83 │   if (notFoundRoute) {
+  > 84 │     subRoutesPathAppendToParent.push(`/${notFoundRoute.path!}`);
+       │                                          ^^^^^^^^^^^^^^^^^^^
+    85 │   }
+    86 │ 
+  
+
+src/index.ts:92:5 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    91 │   const mapCallback = (r: NonIndexRouteObject) =>
+  > 92 │     r.path!.startsWith("/") ? r : { ...r, path: `/${r.path}` };
+       │     ^^^^^^^
+    93 │ 
+    94 │   isolatedRoutes
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+     90  90 │   
+     91  91 │     const mapCallback = (r: NonIndexRouteObject) =>
+     92     │ - ····r.path!.startsWith("/")·?·r·:·{·...r,·path:·`/${r.path}`·};
+         92 │ + ····r.path?.startsWith("/")·?·r·:·{·...r,·path:·`/${r.path}`·};
+     93  93 │   
+     94  94 │     isolatedRoutes
+  
+
+src/index.ts:95:20 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    94 │   isolatedRoutes
+  > 95 │     .filter((r) => r.path!.split("/").length === 1)
+       │                    ^^^^^^^
+    96 │     .forEach((route) => {
+    97 │       arrangeRoutes(isolatedRoutes, route, subRoutesPathAppendToParent, sideEffectRoutes);
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+     93  93 │   
+     94  94 │     isolatedRoutes
+     95     │ - ····.filter((r)·=>·r.path!.split("/").length·===·1)
+         95 │ + ····.filter((r)·=>·r.path?.split("/").length·===·1)
+     96  96 │       .forEach((route) => {
+     97  97 │         arrangeRoutes(isolatedRoutes, route, subRoutesPathAppendToParent, sideEffectRoutes);
+  
+
+src/index.ts:101:50 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    100 │   const intermediaRoutes = isolatedRoutes.filter(
+  > 101 │     (r) => !subRoutesPathAppendToParent.includes(r.path!),
+        │                                                  ^^^^^^^
+    102 │   );
+    103 │ 
+  
+
+src/index.ts:107:20 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    106 │   intermediaRoutes
+  > 107 │     .filter((r) => r.path!.split("/").length > 2)
+        │                    ^^^^^^^
+    108 │     .forEach((route) => {
+    109 │       arrangeRoutes(intermediaRoutes, route, subRoutesPathAppendToParent, sideEffectRoutes);
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+    105 105 │   
+    106 106 │     intermediaRoutes
+    107     │ - ····.filter((r)·=>·r.path!.split("/").length·>·2)
+        107 │ + ····.filter((r)·=>·r.path?.split("/").length·>·2)
+    108 108 │       .forEach((route) => {
+    109 109 │         arrangeRoutes(intermediaRoutes, route, subRoutesPathAppendToParent, sideEffectRoutes);
+  
+
+src/index.ts:113:58 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    112 │   let finalRoutes = intermediaRoutes
+  > 113 │     .filter((r) => !subRoutesPathAppendToParent.includes(r.path!))
+        │                                                          ^^^^^^^
+    114 │     .map(mapCallback);
+    115 │ 
+  
+
+src/utils.ts:97:71 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    95 │   fieldKey: string,
+    96 │ ) => {
+  > 97 │   if (nodepath.dirname(routeA.element as string) === nodepath.dirname(routeB.element! as string)) {
+       │                                                                       ^^^^^^^^^^^^^^^
+    98 │     const condition = validRouteFieldKeyRegexp(fieldKey, routeB.element! as string);
+    99 │ 
+  
+
+src/utils.ts:98:58 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+     96 │ ) => {
+     97 │   if (nodepath.dirname(routeA.element as string) === nodepath.dirname(routeB.element! as string)) {
+   > 98 │     const condition = validRouteFieldKeyRegexp(fieldKey, routeB.element! as string);
+        │                                                          ^^^^^^^^^^^^^^^
+     99 │ 
+    100 │     // Get route name from element path (e.g., "index" from ".../index.tsx")
+  
+
+src/utils.ts:123:7 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    121 │     return (
+    122 │       condition &&
+  > 123 │       routeB.path!.split(ROUTE_PATH_SEP).length - routeA.path!.split(ROUTE_PATH_SEP).length === 1
+        │       ^^^^^^^^^^^^
+    124 │     );
+    125 │   }
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+    121 121 │       return (
+    122 122 │         condition &&
+    123     │ - ······routeB.path!.split(ROUTE_PATH_SEP).length·-·routeA.path!.split(ROUTE_PATH_SEP).length·===·1
+        123 │ + ······routeB.path?.split(ROUTE_PATH_SEP).length·-·routeA.path!.split(ROUTE_PATH_SEP).length·===·1
+    124 124 │       );
+    125 125 │     }
+  
+
+src/utils.ts:123:51 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    121 │     return (
+    122 │       condition &&
+  > 123 │       routeB.path!.split(ROUTE_PATH_SEP).length - routeA.path!.split(ROUTE_PATH_SEP).length === 1
+        │                                                   ^^^^^^^^^^^^
+    124 │     );
+    125 │   }
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+    121 121 │       return (
+    122 122 │         condition &&
+    123     │ - ······routeB.path!.split(ROUTE_PATH_SEP).length·-·routeA.path!.split(ROUTE_PATH_SEP).length·===·1
+        123 │ + ······routeB.path!.split(ROUTE_PATH_SEP).length·-·routeA.path?.split(ROUTE_PATH_SEP).length·===·1
+    124 124 │       );
+    125 125 │     }
+  
+
+src/utils.ts:153:67 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    151 │   };
+    152 │ 
+  > 153 │   return routes.filter((route) => testRoutePath(nodepath.basename(route.element! as string)));
+        │                                                                   ^^^^^^^^^^^^^^
+    154 │ }
+    155 │ 
+  
+
+src/utils.ts:178:68 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    176 │     {
+    177 │       routes: routes.filter(
+  > 178 │         (route) => !Object.keys(reserved_root_field_keys).includes(route.path!),
+        │                                                                    ^^^^^^^^^^^
+    179 │       ),
+    180 │     },
+  
+
+src/utils.ts:193:58 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    191 │   sideEffectRoutes: NonIndexRouteObject[] = [],
+    192 │ ): NonIndexRouteObject => {
+  > 193 │   const subs = isolateRoutes.filter((route) => isSubPath(parent.path!, route.path!));
+        │                                                          ^^^^^^^^^^^^
+    194 │ 
+    195 │   const { handle, loader, errorBoundary, layout } = Object.keys(
+  
+
+src/utils.ts:193:72 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    191 │   sideEffectRoutes: NonIndexRouteObject[] = [],
+    192 │ ): NonIndexRouteObject => {
+  > 193 │   const subs = isolateRoutes.filter((route) => isSubPath(parent.path!, route.path!));
+        │                                                                        ^^^^^^^^^^^
+    194 │ 
+    195 │   const { handle, loader, errorBoundary, layout } = Object.keys(
+  
+
+src/utils.ts:207:72 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    205 │   );
+    206 │ 
+  > 207 │   subRoutesPathAppendToParent.push(...subs.map((s) => ROUTE_PATH_SEP + s.path!));
+        │                                                                        ^^^^^^^
+    208 │ 
+    209 │   Object.assign(parent, {
+  
+
+src/utils.ts:210:28 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    209 │   Object.assign(parent, {
+  > 210 │     path: ROUTE_PATH_SEP + parent.path!,
+        │                            ^^^^^^^^^^^^
+    211 │     loader: loader?.element,
+    212 │     handle: handle?.element,
+  
+
+src/validation.ts:65:18 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    64 │   for (const route of routes) {
+  > 65 │     const path = route.path!;
+       │                  ^^^^^^^^^^^
+    66 │     const file = route.element as string;
+    67 │ 
+  
+
+src/validation.ts:71:5 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    69 │       pathMap.set(path, []);
+    70 │     }
+  > 71 │     pathMap.get(path)!.push(file);
+       │     ^^^^^^^^^^^^^^^^^^
+    72 │   }
+    73 │ 
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+     69  69 │         pathMap.set(path, []);
+     70  70 │       }
+     71     │ - ····pathMap.get(path)!.push(file);
+         71 │ + ····pathMap.get(path)?.push(file);
+     72  72 │     }
+     73  73 │   
+  
+
+src/validation.ts:209:18 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    207 │   // Validate path patterns
+    208 │   for (const route of allRoutes) {
+  > 209 │     const path = route.path!;
+        │                  ^^^^^^^^^^^
+    210 │ 
+    211 │     // Check for empty path segments (double slashes)
+  
+
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 3.
+Checked 15 files in 27ms. No fixes applied.
+Found 22 warnings.
+Found 1 info.

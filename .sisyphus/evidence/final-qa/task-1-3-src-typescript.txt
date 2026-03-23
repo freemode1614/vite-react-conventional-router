@@ -1,0 +1,26 @@
+node_modules/.pnpm/react-router@7.6.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-router/dist/development/register-DCE0tH5m.d.ts(297,5): error TS18028: Private identifiers are only available when targeting ECMAScript 2015 and higher.
+node_modules/.pnpm/vite@6.3.5_@types+node@20.19.0_jiti@1.21.7_yaml@2.8.0/node_modules/vite/dist/node/index.d.ts(5,41): error TS2307: Cannot find module 'rollup/parseAst' or its corresponding type declarations.
+  There are types at '/Users/wenpeng.lei/Developers/vite-react-conventional-router/node_modules/.pnpm/vite@6.3.5_@types+node@20.19.0_jiti@1.21.7_yaml@2.8.0/node_modules/rollup/dist/parseAst.d.ts', but this result could not be resolved under your current 'moduleResolution' setting. Consider updating to 'node16', 'nodenext', or 'bundler'.
+src/index.ts(6,57): error TS2307: Cannot find module '@/constants' or its corresponding type declarations.
+src/index.ts(7,27): error TS2307: Cannot find module '@/logger' or its corresponding type declarations.
+src/index.ts(14,8): error TS2307: Cannot find module '@/utils' or its corresponding type declarations.
+src/index.ts(15,53): error TS2307: Cannot find module '@/validation' or its corresponding type declarations.
+src/utils.ts(1,8): error TS1259: Module '"node:path"' can only be default-imported using the 'esModuleInterop' flag
+src/utils.ts(3,8): error TS1259: Module '"/Users/wenpeng.lei/Developers/vite-react-conventional-router/node_modules/.pnpm/fast-glob@3.3.3/node_modules/fast-glob/out/index"' can only be default-imported using the 'esModuleInterop' flag
+src/utils.ts(19,8): error TS2307: Cannot find module '@/constants' or its corresponding type declarations.
+src/utils.ts(20,27): error TS2307: Cannot find module '@/logger' or its corresponding type declarations.
+src/utils.ts(21,32): error TS2307: Cannot find module '@/type-guards' or its corresponding type declarations.
+src/utils.ts(26,44): error TS2802: Type 'string | string[]' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+src/utils.ts(195,11): error TS2339: Property 'handle' does not exist on type 'SideEffects'.
+src/utils.ts(195,19): error TS2339: Property 'loader' does not exist on type 'SideEffects'.
+src/utils.ts(195,27): error TS2339: Property 'errorBoundary' does not exist on type 'SideEffects'.
+src/utils.ts(195,42): error TS2339: Property 'layout' does not exist on type 'SideEffects'.
+src/utils.ts(289,53): error TS2345: Argument of type 'true | LoaderFunction<any>' is not assignable to parameter of type 'string'.
+  Type 'boolean' is not assignable to type 'string'.
+src/utils.ts(299,53): error TS2345: Argument of type 'true | ActionFunction<any>' is not assignable to parameter of type 'string'.
+  Type 'boolean' is not assignable to type 'string'.
+src/utils.ts(304,60): error TS2345: Argument of type 'ComponentType<{}>' is not assignable to parameter of type 'string'.
+  Type 'ComponentClass<{}, any>' is not assignable to type 'string'.
+src/utils.ts(372,44): error TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.
+src/validation.ts(1,8): error TS1259: Module '"node:path"' can only be default-imported using the 'esModuleInterop' flag
+src/validation.ts(5,27): error TS2307: Cannot find module '@/logger' or its corresponding type declarations.

@@ -1,6 +1,5 @@
-
 export default function loader() {
-    return {
-      "name": "job"
-    }
+  return {
+    name: "job",
+  };
 }

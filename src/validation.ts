@@ -4,6 +4,8 @@ import type { NonIndexRouteObject } from "react-router";
 
 import { pluginlog } from "@/logger";
 
+import { LOADER_ERROR_NO_DEFAULT_EXPORT } from "./errors";
+
 /**
  * Represents a route conflict where multiple files map to the same route path.
  */
@@ -186,15 +188,10 @@ export function validateRoutes(
     if (basename.includes(".")) {
       // Field key is like home.layout.tsx - check if home exists
       const baseRouteName = basename.split(".")[0];
-      const expectedPath = nodepath.join(
-        nodepath.dirname(route.element as string),
-        baseRouteName,
-      );
+      const expectedPath = nodepath.join(nodepath.dirname(route.element as string), baseRouteName);
 
       // This is a simplified check
-      const exists = allRoutes.some((r) =>
-        (r.element as string).includes(expectedPath),
-      );
+      const exists = allRoutes.some((r) => (r.element as string).includes(expectedPath));
 
       if (!exists) {
         issues.push({
@@ -235,6 +232,41 @@ export function validateRoutes(
     valid: !issues.some((i) => i.severity === "error"),
     issues,
     conflicts,
+  };
+}
+
+/**
+ * Validates that a route export has a valid loader.
+ *
+ * Loaders must be either:
+ * - A function (loader function)
+ * - A string (module path)
+ *
+ * @param loader - The loader export to validate
+ * @returns Validation result with success status and any error message
+ */
+export function validateRouteExport(loader: unknown): {
+  valid: boolean;
+  error?: string;
+} {
+  if (loader === undefined || loader === null) {
+    return {
+      valid: false,
+      error: LOADER_ERROR_NO_DEFAULT_EXPORT,
+    };
+  }
+
+  if (typeof loader === "function") {
+    return { valid: true };
+  }
+
+  if (typeof loader === "string") {
+    return { valid: true };
+  }
+
+  return {
+    valid: false,
+    error: `Loader must be a function or string, got ${typeof loader}`,
   };
 }
 

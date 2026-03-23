@@ -1,0 +1,477 @@
+biome.json:2:14 deserialize ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i The configuration schema version does not match the CLI version 2.4.6
+  
+    1 │ {
+  > 2 │   "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+      │              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │   "linter": {
+    4 │     "enabled": true,
+  
+  i   Expected:                     2.4.6
+      Found:                        2.3.11
+  
+  
+  i Run the command biome migrate to migrate the configuration file.
+  
+
+coverage/base.css:49:30 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    47 │ @media only screen and (max-width:640px) {
+    48 │   .col3 { width:100%; max-width:100%; }
+  > 49 │   .hide-mobile { display:none!important; }
+       │                              ^^^^^^^^^^
+    50 │ }
+    51 │ 
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    49 │ ··.hide-mobile·{·display:none!important;·}
+       │                              ----------   
+
+coverage/base.css:114:20 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    112 │ }
+    113 │ .missing-if-branch .typ, .skip-if-branch .typ {
+  > 114 │     color: inherit !important;
+        │                    ^^^^^^^^^^
+    115 │ }
+    116 │ .coverage-summary {
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    114 │ ····color:·inherit·!important;
+        │                   ----------- 
+
+coverage/base.css:122:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+  
+    120 │ .coverage-summary tr { border-bottom: 1px solid #bbb; }
+    121 │ .keyline-all { border: 1px solid #ddd; }
+  > 122 │ .coverage-summary td, .coverage-summary th { padding: 10px; }
+        │ ^^^^^^^^^^^^^^^^^^^^
+    123 │ .coverage-summary tbody { border: 1px solid #bbb; }
+    124 │ .coverage-summary td { border-right: 1px solid #bbb; }
+  
+  i This selector specificity is (0, 1, 2)
+  
+    73 │ }
+    74 │ 
+  > 75 │ table.coverage td {
+       │ ^^^^^^^^^^^^^^^^^
+    76 │   margin: 0;
+    77 │   padding: 0;
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+coverage/base.css:124:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+  
+    122 │ .coverage-summary td, .coverage-summary th { padding: 10px; }
+    123 │ .coverage-summary tbody { border: 1px solid #bbb; }
+  > 124 │ .coverage-summary td { border-right: 1px solid #bbb; }
+        │ ^^^^^^^^^^^^^^^^^^^^
+    125 │ .coverage-summary td:last-child { border-right: none; }
+    126 │ .coverage-summary th {
+  
+  i This selector specificity is (0, 1, 2)
+  
+    73 │ }
+    74 │ 
+  > 75 │ table.coverage td {
+       │ ^^^^^^^^^^^^^^^^^
+    76 │   margin: 0;
+    77 │   padding: 0;
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+coverage/base.css:131:48 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    129 │   white-space: nowrap;
+    130 │ }
+  > 131 │ .coverage-summary th.file { border-right: none !important; }
+        │                                                ^^^^^^^^^^
+    132 │ .coverage-summary th.pct { }
+    133 │ .coverage-summary th.pic,
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    131 │ .coverage-summary·th.file·{·border-right:·none·!important;·}
+        │                                               -----------   
+
+coverage/base.css:132:26 lint/suspicious/noEmptyBlock ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! An empty block isn't allowed.
+  
+    130 │ }
+    131 │ .coverage-summary th.file { border-right: none !important; }
+  > 132 │ .coverage-summary th.pct { }
+        │                          ^^^
+    133 │ .coverage-summary th.pic,
+    134 │ .coverage-summary th.abs,
+  
+  i Consider removing the empty block or adding styles inside it.
+  
+
+coverage/base.css:138:45 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    136 │ .coverage-summary td.abs { text-align: right; }
+    137 │ .coverage-summary td.file { white-space: nowrap;  }
+  > 138 │ .coverage-summary td.pic { min-width: 120px !important;  }
+        │                                             ^^^^^^^^^^
+    139 │ .coverage-summary tfoot td { }
+    140 │ 
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    138 │ .coverage-summary·td.pic·{·min-width:·120px·!important;··}
+        │                                            -----------    
+
+coverage/base.css:139:28 lint/suspicious/noEmptyBlock ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! An empty block isn't allowed.
+  
+    137 │ .coverage-summary td.file { white-space: nowrap;  }
+    138 │ .coverage-summary td.pic { min-width: 120px !important;  }
+  > 139 │ .coverage-summary tfoot td { }
+        │                            ^^^
+    140 │ 
+    141 │ .coverage-summary .sorter {
+  
+  i Consider removing the empty block or adding styles inside it.
+  
+
+coverage/base.css:156:34 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    154 │ .status-line {  height: 10px; }
+    155 │ /* yellow */
+  > 156 │ .cbranch-no { background: yellow !important; color: #111; }
+        │                                  ^^^^^^^^^^
+    157 │ /* dark red */
+    158 │ .red.solid, .status-line.low, .low .cover-fill { background:#C21F39 }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    156 │ .cbranch-no·{·background:·yellow·!important;·color:·#111;·}
+        │                                 -----------                
+
+coverage/base.css:162:23 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    160 │ .highlighted,
+    161 │ .highlighted .cstat-no, .highlighted .fstat-no, .highlighted .cbranch-no{
+  > 162 │   background: #C21F39 !important;
+        │                       ^^^^^^^^^^
+    163 │ }
+    164 │ /* medium red */
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    162 │ ··background:·#C21F39·!important;
+        │                      ----------- 
+
+coverage/base.css:165:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 0)
+  
+    163 │ }
+    164 │ /* medium red */
+  > 165 │ .cstat-no, .fstat-no, .cbranch-no, .cbranch-no { background:#F6C6CE }
+        │ ^^^^^^^^^
+    166 │ /* light red */
+    167 │ .low, .cline-no { background:#FCE1E5 }
+  
+  i This selector specificity is (0, 2, 0)
+  
+    159 │ .low .chart { border:1px solid #C21F39 }
+    160 │ .highlighted,
+  > 161 │ .highlighted .cstat-no, .highlighted .fstat-no, .highlighted .cbranch-no{
+        │ ^^^^^^^^^^^^^^^^^^^^^^
+    162 │   background: #C21F39 !important;
+    163 │ }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+coverage/base.css:165:12 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 0)
+  
+    163 │ }
+    164 │ /* medium red */
+  > 165 │ .cstat-no, .fstat-no, .cbranch-no, .cbranch-no { background:#F6C6CE }
+        │            ^^^^^^^^^
+    166 │ /* light red */
+    167 │ .low, .cline-no { background:#FCE1E5 }
+  
+  i This selector specificity is (0, 2, 0)
+  
+    159 │ .low .chart { border:1px solid #C21F39 }
+    160 │ .highlighted,
+  > 161 │ .highlighted .cstat-no, .highlighted .fstat-no, .highlighted .cbranch-no{
+        │                         ^^^^^^^^^^^^^^^^^^^^^^
+    162 │   background: #C21F39 !important;
+    163 │ }
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+coverage/base.css:182:45 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    181 │ .cstat-skip { background: #ddd; color: #111; }
+  > 182 │ .fstat-skip { background: #ddd; color: #111 !important; }
+        │                                             ^^^^^^^^^^
+    183 │ .cbranch-skip { background: #ddd !important; color: #111; }
+    184 │ 
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    182 │ .fstat-skip·{·background:·#ddd;·color:·#111·!important;·}
+        │                                            -----------   
+
+coverage/base.css:183:34 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    181 │ .cstat-skip { background: #ddd; color: #111; }
+    182 │ .fstat-skip { background: #ddd; color: #111 !important; }
+  > 183 │ .cbranch-skip { background: #ddd !important; color: #111; }
+        │                                  ^^^^^^^^^^
+    184 │ 
+    185 │ span.cline-neutral { background: #eaeaea; }
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    183 │ .cbranch-skip·{·background:·#ddd·!important;·color:·#111;·}
+        │                                 -----------                
+
+coverage/base.css:195:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 0)
+  
+    193 │ }
+    194 │ 
+  > 195 │ .cover-fill, .cover-empty {
+        │ ^^^^^^^^^^^
+    196 │   display:inline-block;
+    197 │   height: 12px;
+  
+  i This selector specificity is (0, 2, 0)
+  
+    156 │ .cbranch-no { background: yellow !important; color: #111; }
+    157 │ /* dark red */
+  > 158 │ .red.solid, .status-line.low, .low .cover-fill { background:#C21F39 }
+        │                               ^^^^^^^^^^^^^^^^
+    159 │ .low .chart { border:1px solid #C21F39 }
+    160 │ .highlighted,
+  
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+  
+
+.sisyphus/boulder.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    21 21 │     "plan_name": "code-improvement",
+    22 22 │     "agent": "atlas"
+    23    │ - }
+       23 │ + }
+       24 │ + 
+  
+
+coverage/base.css:6:45 lint/a11y/useGenericFontNames ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Generic font family missing.
+  
+    4 │ }
+    5 │ body {
+  > 6 │     font-family: Helvetica Neue, Helvetica, Arial;
+      │                                             ^^^^^
+    7 │     font-size: 14px;
+    8 │     color:#333;
+  
+  i Consider adding a generic font family as a fallback.
+  
+  i For examples and more information, see the MDN Web Docs
+  
+  - serif
+  - sans-serif
+  - monospace
+  - etc.
+  
+
+coverage/base.css:54:3 lint/suspicious/noDuplicateProperties ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Duplicate properties can lead to unexpected behavior and may override previous declarations unintentionally.
+  
+    52 │ .quiet {
+    53 │   color: #7f7f7f;
+  > 54 │   color: rgba(0,0,0,0.5);
+       │   ^^^^^
+    55 │ }
+    56 │ .quiet a { opacity: 0.7; }
+  
+  i color is already defined here.
+  
+    52 │ .quiet {
+  > 53 │   color: #7f7f7f;
+       │   ^^^^^
+    54 │   color: rgba(0,0,0,0.5);
+    55 │ }
+  
+  i Remove or rename the duplicate property to ensure consistent styling.
+  
+
+coverage/prettify.css format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    1     │ - .pln{color:#000}@media·screen{.str{color:#080}.kwd{color:#008}.com{color:#800}.typ{color:#606}.lit{color:#066}.pun,.opn,.clo{color:#660}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec,.var{color:#606}.fun{color:red}}@media·print,projection{.str{color:#060}.kwd{color:#006;font-weight:bold}.com{color:#600;font-style:italic}.typ{color:#404;font-weight:bold}.lit{color:#044}.pun,.opn,.clo{color:#440}.tag{color:#006;font-weight:bold}.atn{color:#404}.atv{color:#060}}pre.prettyprint{padding:2px;border:1px·solid·#888}ol.linenums{margin-top:0;margin-bottom:0}li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8{list-style-type:none}li.L1,li.L3,li.L5,li.L7,li.L9{background:#eee}
+        1 │ + .pln·{
+        2 │ + ··color:·#000;
+        3 │ + }
+        4 │ + @media·screen·{
+        5 │ + ··.str·{
+        6 │ + ····color:·#080;
+        7 │ + ··}
+        8 │ + ··.kwd·{
+        9 │ + ····color:·#008;
+       10 │ + ··}
+       11 │ + ··.com·{
+       12 │ + ····color:·#800;
+       13 │ + ··}
+       14 │ + ··.typ·{
+       15 │ + ····color:·#606;
+       16 │ + ··}
+       17 │ + ··.lit·{
+       18 │ + ····color:·#066;
+       19 │ + ··}
+       20 │ + ··.pun,
+       21 │ + ··.opn,
+       22 │ + ··.clo·{
+       23 │ + ····color:·#660;
+       24 │ + ··}
+       25 │ + ··.tag·{
+       26 │ + ····color:·#008;
+       27 │ + ··}
+       28 │ + ··.atn·{
+       29 │ + ····color:·#606;
+       30 │ + ··}
+       31 │ + ··.atv·{
+       32 │ + ····color:·#080;
+       33 │ + ··}
+       34 │ + ··.dec,
+       35 │ + ··.var·{
+       36 │ + ····color:·#606;
+       37 │ + ··}
+       38 │ + ··.fun·{
+       39 │ + ····color:·red;
+       40 │ + ··}
+       41 │ + }
+       42 │ + @media·print,·projection·{
+       43 │ + ··.str·{
+       44 │ + ····color:·#060;
+       45 │ + ··}
+       46 │ + ··.kwd·{
+       47 │ + ····color:·#006;
+       48 │ + ····font-weight:·bold;
+       49 │ + ··}
+       50 │ + ··.com·{
+       51 │ + ····color:·#600;
+       52 │ + ····font-style:·italic;
+       53 │ + ··}
+       54 │ + ··.typ·{
+       55 │ + ····color:·#404;
+       56 │ + ····font-weight:·bold;
+       57 │ + ··}
+       58 │ + ··.lit·{
+       59 │ + ····color:·#044;
+       60 │ + ··}
+       61 │ + ··.pun,
+       62 │ + ··.opn,
+       63 │ + ··.clo·{
+       64 │ + ····color:·#440;
+       65 │ + ··}
+       66 │ + ··.tag·{
+       67 │ + ····color:·#006;
+       68 │ + ····font-weight:·bold;
+       69 │ + ··}
+       70 │ + ··.atn·{
+       71 │ + ····color:·#404;
+       72 │ + ··}
+       73 │ + ··.atv·{
+       74 │ + ····color:·#060;
+       75 │ + ··}
+       76 │ + }
+       77 │ + pre.prettyprint·{
+       78 │ + ··padding:·2px;
+       79 │ + ··border:·1px·solid·#888;
+       80 │ + }
+       81 │ + ol.linenums·{
+       82 │ + ··margin-top:·0;
+       83 │ + ··margin-bottom:·0;
+       84 │ + }
+       85 │ + li.L0,
+       86 │ + li.L1,
+       87 │ + li.L2,
+       88 │ + li.L3,
+       89 │ + li.L5,
+       90 │ + li.L6,
+       91 │ + li.L7,
+       92 │ + li.L8·{
+       93 │ + ··list-style-type:·none;
+       94 │ + }
+       95 │ + li.L1,
+       96 │ + li.L3,
+       97 │ + li.L5,
+       98 │ + li.L7,
+       99 │ + li.L9·{
+      100 │ + ··background:·#eee;
+      101 │ + }
+    2 102 │   
+  
+
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 322.
+Checked 85 files in 237ms. No fixes applied.
+Found 209 errors.
+Found 89 warnings.
+Found 44 infos.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+

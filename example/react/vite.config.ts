@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import conventionalRouter from "@moccona/vite-plugin-react-conventional-router"
+import conventionalRouter from "@moccona/vite-plugin-react-conventional-router";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,8 +13,7 @@ export default defineConfig({
     conventionalRouter({
       include: ["src/pages/**"],
       exclude: ["src/**/components/**", "src/**/hooks/**"],
-      lazy: true
-    })
+      lazy: true,
+    }),
   ],
-})
-
+});

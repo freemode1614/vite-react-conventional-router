@@ -1,0 +1,51 @@
+Task 16: Loader Validation Tests - Evidence
+============================================
+
+Date: 2026-03-23
+
+CHANGES MADE:
+-------------
+
+1. Added validateRouteExport() function to src/validation.ts
+   - Validates loader exports (must be function or string)
+   - Returns { valid: boolean, error?: string }
+   - Uses LOADER_ERROR_NO_DEFAULT_EXPORT constant from errors.ts
+
+2. Added 9 loader validation test cases to __tests__/validation.spec.ts
+   - Test valid function loader
+   - Test valid async function loader
+   - Test valid string loader (module path)
+   - Test invalid undefined loader
+   - Test invalid null loader
+   - Test invalid number loader
+   - Test invalid object loader
+   - Test invalid array loader
+   - Test invalid boolean loader
+
+TEST RESULTS:
+-------------
+
+All Tests: 52 passed (52)
+  - __tests__/index.spec.ts: 22 tests
+  - __tests__/validation.spec.ts: 15 tests (6 original + 9 new)
+  - __tests__/type-guards.spec.ts: 15 tests
+
+Coverage for validation.ts:
+  - Statements: 80.76% (≥60% ✓)
+  - Branches: 64.1% (≥60% ✓)
+  - Functions: 90% (≥60% ✓)
+  - Lines: 79.45% (≥60% ✓)
+
+ACCEPTANCE CRITERIA:
+--------------------
+
+✓ 3+ loader validation test cases added (9 added)
+✓ Tests cover valid/invalid loaders
+✓ All tests pass (52/52, exceeds 41+ requirement)
+✓ validation.ts coverage maintained ≥60% (all metrics ≥64%)
+
+VERIFICATION COMMAND:
+--------------------
+
+pnpm test __tests__/validation.spec.ts
+pnpm test

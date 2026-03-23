@@ -1,5 +1,5 @@
 export default function loader() {
   return {
-    name: "Say My Name!!!"
-  }
+    name: "Say My Name!!!",
+  };
 }

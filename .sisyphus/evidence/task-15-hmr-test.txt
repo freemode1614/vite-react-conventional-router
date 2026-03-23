@@ -1,0 +1,42 @@
+Task 15: HMR watchChange Tests - Evidence
+==========================================
+
+Date: 2026-03-23
+
+Tests Added (7 new test cases):
+-------------------------------
+1. should exist as a hook function
+2. should trigger server restart when .tsx file is created
+3. should trigger server restart when .ts file is created
+4. should trigger server restart when .tsx file is deleted
+5. should trigger server restart when .ts file is deleted
+6. should NOT trigger restart when file is updated (not create/delete)
+7. should trigger restart for any file type when create/delete event occurs
+8. should handle restart failure gracefully
+
+Test Results:
+-------------
+✓ __tests__/index.spec.ts (22 tests) 47ms
+
+Test Files  1 passed (1)
+Tests  22 passed (22)
+
+Implementation Details:
+-----------------------
+- watchChange hook responds to file create/delete events
+- Triggers Vite dev server restart for matched files
+- Handles restart failures gracefully with warning
+- Uses plugin context (this.info, this.warn) for logging
+- Filter matches files based on include/exclude patterns
+
+Key Testing Patterns Used:
+--------------------------
+- Mock ViteDevServer with vi.fn() for restart method
+- Mock plugin context with info/warn spies
+- Use call() to bind context when invoking watchChange
+- Use absolute paths for filter matching
+- Test both positive and negative cases
+
+Files Modified:
+---------------
+- __tests__/index.spec.ts (added 7 new test cases in watchChange describe block)

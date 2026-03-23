@@ -1,0 +1,39 @@
+
+> @moccona/vite-plugin-react-conventional-router@0.2.8 coverage /Users/wenpeng.lei/Developers/vite-react-conventional-router
+> vitest run --coverage
+
+
+ RUN  v3.2.3 /Users/wenpeng.lei/Developers/vite-react-conventional-router
+      Coverage enabled with istanbul
+
+stdout | __tests__/index.spec.ts > createConventionalRouter > resolveId() > should return virtual module name for virtual:routes import
+INFO vite-plugin-conventional-router Read virtual routes
+
+ ✓ __tests__/index.spec.ts (22 tests) 99ms
+ ✓ __tests__/validation.spec.ts (15 tests) 7ms
+ ✓ __tests__/type-guards.spec.ts (15 tests) 4ms
+
+ Test Files  3 passed (3)
+      Tests  52 passed (52)
+   Start at  12:00:55
+   Duration  2.77s (transform 730ms, setup 0ms, collect 1.12s, tests 110ms, environment 0ms, prepare 402ms)
+
+ % Coverage report from istanbul
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   83.72 |    65.64 |   85.33 |   83.87 |                   
+ src               |   85.17 |    65.64 |   90.14 |    85.4 |                   
+  constants.ts     |     100 |      100 |     100 |     100 |                   
+  errors.ts        |     100 |      100 |     100 |     100 |                   
+  index.ts         |   79.16 |    51.35 |   86.36 |      80 | ...23,232,237-238 
+  logger.ts        |     100 |      100 |     100 |     100 |                   
+  type-guards.ts   |     100 |      100 |     100 |     100 |                   
+  utils.ts         |   88.98 |    72.41 |   91.42 |    89.9 | ...82,386-387,404 
+  validation.ts    |   80.76 |     64.1 |      90 |   79.45 | 279-302           
+ src/pages         |       0 |      100 |       0 |       0 |                   
+  index.loader.ts  |       0 |      100 |       0 |       0 | 2                 
+  index.tsx        |       0 |      100 |       0 |       0 | 2                 
+  ...rBoundary.tsx |       0 |      100 |       0 |       0 | 4-5               
+  test.tsx         |       0 |      100 |       0 |       0 | 2                 
+-------------------|---------|----------|---------|---------|-------------------

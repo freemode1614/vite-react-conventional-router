@@ -1,0 +1,44 @@
+
+Task 14: Handle/Action Test Evidence
+=====================================
+Date: 2026-03-23
+
+Tests Added:
+- should include handle import in generated code when handle file exists
+- should include loader import in generated code when loader file exists
+- should wire handle data to route metadata in generated code
+- should wire loader to route in generated code
+- should handle root-level handle file and merge with root layout
+- should handle nested route handle/loader files correctly
+- should export default routes in generated code
+
+Test Fixtures Created:
+- src/pages/index.loader.ts - Loader function returning data
+- src/pages/index.handle.ts - Handle metadata (crumb, title)
+
+Test Results:
+=============
+
+ RUN  v3.2.3 /Users/wenpeng.lei/Developers/vite-react-conventional-router
+
+stdout | __tests__/index.spec.ts > createConventionalRouter > resolveId() > should return virtual module name for virtual:routes import
+INFO vite-plugin-conventional-router Read virtual routes
+
+ ✓ __tests__/index.spec.ts (15 tests) 39ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  11:47:32
+   Duration  1.30s (transform 151ms, setup 0ms, collect 377ms, tests 39ms, environment 0ms, prepare 245ms)
+
+All Tests (Project-wide):
+=========================
+ Test Files  3 passed (3)
+      Tests  36 passed (36)
+
+Summary:
+- 7 new Handle/Loader integration tests added to __tests__/index.spec.ts
+- All 15 tests in index.spec.ts pass
+- All 36 project-wide tests pass
+- Coverage improved for handle and loader functionality
+

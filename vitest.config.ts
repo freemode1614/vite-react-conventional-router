@@ -15,6 +15,20 @@ export default defineConfig({
     coverage: {
       include: ["src/**"],
       provider: "istanbul", // or 'v8'
+      thresholds: {
+        global: {
+          lines: 80,
+          branches: 80,
+          functions: 80,
+          statements: 80,
+        },
+        each: {
+          lines: 60,
+          branches: 60,
+          functions: 60,
+          statements: 60,
+        },
+      },
     },
   },
 });

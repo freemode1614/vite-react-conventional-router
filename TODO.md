@@ -15,6 +15,7 @@
 **根因**: `stringifyRoutes` 函数中使用 `imports.length` 作为 loader 索引，但多个路由可能共享 loader 引用，导致索引错位。
 
 **修复建议**:
+
 ```typescript
 // 使用 Map 跟踪已导入的 loader
 const loaderMap = new Map<string, string>();
@@ -43,6 +44,7 @@ if (loader) {
 **修复建议**: 将 `pluginlog` 提取到独立的 `logger.ts` 模块。
 
 **相关文件**:
+
 - `src/utils.ts` (第 20 行): `import { pluginlog } from "@/index";`
 - `src/validation.ts` (第 5 行): `import { pluginlog } from "@/index";`
 - `src/index.ts` (第 28 行): `export const pluginlog = createScopedLogger(PLUGIN_NAME);`
@@ -58,6 +60,7 @@ if (loader) {
 **影响**: 难以测试、难以理解、难以修改。
 
 **修复建议**: 拆分为多个小函数：
+
 - `buildRouteTree()` - 构建路由树
 - `applyLayouts()` - 应用布局
 - `generateRouteCode()` - 生成代码
@@ -70,16 +73,18 @@ if (loader) {
 ### [REFACTOR-002] 简化路由构建算法
 
 **问题描述**: `load` 函数中的双重过滤逻辑难以理解：
+
 ```typescript
 // 第一次过滤
-isolateRoutes.filter((r) => r.path!.split("/").length === 1)
-// 第二次过滤  
-intermediaRoutes.filter((r) => r.path!.split("/").length > 2)
+isolateRoutes.filter((r) => r.path!.split("/").length === 1);
+// 第二次过滤
+intermediaRoutes.filter((r) => r.path!.split("/").length > 2);
 ```
 
 **影响**: 代码意图不明确，维护困难。
 
-**修复建议**: 
+**修复建议**:
+
 1. 添加详细注释说明算法逻辑
 2. 或重构为更易理解的流程
 3. 提取魔法数字为命名常量
@@ -91,20 +96,23 @@ intermediaRoutes.filter((r) => r.path!.split("/").length > 2)
 ### [TYPE-001] 减少类型断言使用
 
 **问题描述**: 代码中存在大量 `as` 类型断言和 Non-null 断言：
+
 ```typescript
-route.element! as string
-loader as unknown as string
-route.path!
+route.element! as string;
+loader as unknown as string;
+route.path!;
 ```
 
 **影响**: 绕过 TypeScript 类型检查，可能导致运行时错误。
 
 **修复建议**:
+
 1. 添加运行时类型检查
 2. 改进类型定义，使用更精确的类型
 3. 使用类型守卫函数
 
-**相关文件**: 
+**相关文件**:
+
 - `src/utils.ts` (多处)
 - `src/index.ts` (多处)
 
@@ -113,6 +121,7 @@ route.path!
 ### [DOCS-001] 为复杂算法添加注释
 
 **问题描述**: `collectRoutePages` 中的路径前缀去除逻辑难以理解：
+
 ```typescript
 while (true) {
   const group = files.map((file) => file[0]);
@@ -137,6 +146,7 @@ while (true) {
 ### [TEST-001] 补充单元测试
 
 **缺失的测试场景**:
+
 - [ ] ErrorBoundary 触发和渲染
 - [ ] Handle 数据处理
 - [ ] Action 表单处理
@@ -153,6 +163,7 @@ while (true) {
 ### [TEST-002] 补充 E2E 测试
 
 **缺失的测试场景**:
+
 - [ ] ErrorBoundary 错误捕获
 - [ ] 404 页面兜底路由
 - [ ] 客户端导航历史记录
@@ -166,6 +177,7 @@ while (true) {
 ### [VALIDATION-001] 增强路由验证
 
 **缺失的验证**:
+
 - [ ] 动态路由参数名冲突检测
 - [ ] loader 文件是否有默认导出
 - [ ] layout 文件是否为有效的 React 组件
@@ -178,6 +190,7 @@ while (true) {
 ### [PERF-001] 性能优化
 
 **优化点**:
+
 - [ ] `globSync` 是同步操作，大型项目可能受影响，考虑异步化
 - [ ] `deepCopy` 使用 `JSON.parse/stringify`，考虑使用 `structuredClone`
 - [ ] 缓存 glob 结果，避免重复读取文件系统
@@ -189,6 +202,7 @@ while (true) {
 ### [CONFIG-001] 支持更多配置选项
 
 **建议添加的配置**:
+
 - [ ] `caseSensitive`: 路由大小写敏感选项
 - [ ] `trailingSlash`: 尾随斜杠处理
 - [ ] `basePath`: 基础路径配置
@@ -201,6 +215,7 @@ while (true) {
 ### [ERROR-001] 改进错误信息
 
 **改进点**:
+
 - [ ] 路由冲突时显示更清晰的错误信息
 - [ ] 提供修复建议的代码示例
 - [ ] 添加错误码便于搜索解决方案
@@ -211,10 +226,19 @@ while (true) {
 
 ## 📋 完成记录
 
-| 编号 | 描述 | 状态 | 完成日期 | 备注 |
-|------|------|------|----------|------|
-| BUG-001 | 修复根路由 Loader 被错误分配的问题 | ✅ 已完成 | 2026-03-10 | 使用 Map 跟踪已导入的 loader，避免索引错位 |
-| BUG-002 | 修复循环依赖问题 | ✅ 已完成 | 2026-03-10 | 提取 pluginlog 到独立的 logger.ts 模块 |
+| 编号           | 描述                               | 状态      | 完成日期   | 备注                                                                |
+| -------------- | ---------------------------------- | --------- | ---------- | ------------------------------------------------------------------- |
+| BUG-001        | 修复根路由 Loader 被错误分配的问题 | ✅ 已完成 | 2026-03-10 | 使用 Map 跟踪已导入的 loader，避免索引错位                          |
+| BUG-002        | 修复循环依赖问题                   | ✅ 已完成 | 2026-03-10 | 提取 pluginlog 到独立的 logger.ts 模块                              |
+| REFACTOR-001   | 重构 load 函数                     | ✅ 已完成 | 2026-03-23 | 拆分为 buildRouteTree(), applyLayouts(), generateRouteCode() 等函数 |
+| REFACTOR-002   | 重构路由构建算法                   | ✅ 已完成 | 2026-03-23 | 添加详细注释说明算法流程                                            |
+| TYPE-001       | 减少类型断言                       | ✅ 已完成 | 2026-03-23 | `as` 从 29→25，`!` 从 30→5                                          |
+| DOCS-001       | 添加 JSDoc 注释                    | ✅ 已完成 | 2026-03-23 | 为复杂算法添加 JSDoc                                                |
+| TEST-001       | 增加单元测试                       | ✅ 已完成 | 2026-03-23 | 从 10 个测试增加到 52 个                                            |
+| VALIDATION-001 | 增强验证                           | ✅ 已完成 | 2026-03-23 | 添加 loader 验证测试                                                |
+| CONFIG-001     | 添加更多配置项                     | ⏸️ 暂缓   | -          | 保持 API 简洁，暂无需添加                                           |
+| PERF-001       | 性能优化                           | ⏸️ 暂缓   | -          | 无基准数据，暂不优化                                                |
+| ERROR-001      | 改进错误信息                       | ⏸️ 暂缓   | -          | 当前错误信息已足够清晰                                              |
 
 ---
 

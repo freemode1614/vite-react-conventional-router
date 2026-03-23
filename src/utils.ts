@@ -18,6 +18,7 @@ import {
   SPECIAL_PATH_SPLIT,
 } from "@/constants";
 import { pluginlog } from "@/logger";
+import { isStringExport } from "@/type-guards";
 
 function globSync(pattern: Pattern | Pattern[], ignore: Pattern | Pattern[]) {
   const files = fg.sync(pattern, {
@@ -50,10 +51,7 @@ export const collectRoutePages = (
   for (const pattern of pages) {
     let files = globSync(pattern, ignore);
 
-    pageModules = [
-      ...pageModules,
-      ...files.map((file) => nodepath.resolve(file)),
-    ];
+    pageModules = [...pageModules, ...files.map((file) => nodepath.resolve(file))];
 
     while (true) {
       const group = files.map((file) => file[0]);
@@ -64,7 +62,7 @@ export const collectRoutePages = (
       }
     }
 
-    routes = [...routes, ...files.map((file) => file).flat()];
+    routes = [...routes, ...files.flatMap((file) => file)];
   }
 
   return routes
@@ -96,14 +94,8 @@ export const isFieldKeyRoute = (
   routeB: NonIndexRouteObject,
   fieldKey: string,
 ) => {
-  if (
-    nodepath.dirname(routeA.element as string) ===
-    nodepath.dirname(routeB.element! as string)
-  ) {
-    const condition = validRouteFieldKeyRegexp(
-      fieldKey,
-      routeB.element! as string,
-    );
+  if (nodepath.dirname(routeA.element as string) === nodepath.dirname(routeB.element! as string)) {
+    const condition = validRouteFieldKeyRegexp(fieldKey, routeB.element! as string);
 
     // Get route name from element path (e.g., "index" from ".../index.tsx")
     const routeABaseName = nodepath.basename(
@@ -111,9 +103,8 @@ export const isFieldKeyRoute = (
       nodepath.extname(routeA.element as string),
     );
     // For index.tsx, the route name is treated as empty (root)
-    const routeAName = routeABaseName === PLUGIN_MAIN_PAGE_FILE.replace(".tsx", "")
-      ? ""
-      : routeABaseName;
+    const routeAName =
+      routeABaseName === PLUGIN_MAIN_PAGE_FILE.replace(".tsx", "") ? "" : routeABaseName;
 
     // For root route (path is ""), only match if routeB's path is exactly the fieldKey
     // e.g., "loader" matches root, but "page4/loader" (from page4.loader.ts) does not
@@ -129,9 +120,7 @@ export const isFieldKeyRoute = (
 
     return (
       condition &&
-      routeB.path!.split(ROUTE_PATH_SEP).length -
-        routeA.path!.split(ROUTE_PATH_SEP).length ===
-        1
+      routeB.path!.split(ROUTE_PATH_SEP).length - routeA.path!.split(ROUTE_PATH_SEP).length === 1
     );
   }
 
@@ -161,9 +150,7 @@ export function collectRouteFieldKeyRoute(routes: NonIndexRouteObject[]) {
       .some((result) => result);
   };
 
-  return routes.filter((route) =>
-    testRoutePath(nodepath.basename(route.element! as string)),
-  );
+  return routes.filter((route) => testRoutePath(nodepath.basename(route.element! as string)));
 }
 
 const reserved_root_field_keys = {
@@ -177,9 +164,7 @@ type CollectReturn = {
   [Key in keyof typeof reserved_root_field_keys]?: NonIndexRouteObject;
 } & { routes?: NonIndexRouteObject[] };
 
-export const collectRootRouteRelatedRoute = (
-  routes: NonIndexRouteObject[],
-): CollectReturn => {
+export const collectRootRouteRelatedRoute = (routes: NonIndexRouteObject[]): CollectReturn => {
   return Object.assign(
     Object.keys(reserved_root_field_keys).reduce<CollectReturn>(
       (object, fieldKey) => ({
@@ -205,9 +190,7 @@ export const arrangeRoutes = (
   subRoutesPathAppendToParent: string[],
   sideEffectRoutes: NonIndexRouteObject[] = [],
 ): NonIndexRouteObject => {
-  const subs = isolateRoutes.filter((route) =>
-    isSubPath(parent.path!, route.path!),
-  );
+  const subs = isolateRoutes.filter((route) => isSubPath(parent.path!, route.path!));
 
   const { handle, loader, errorBoundary, layout } = Object.keys(
     reserved_route_filed_keys,
@@ -221,9 +204,7 @@ export const arrangeRoutes = (
     {},
   );
 
-  subRoutesPathAppendToParent.push(
-    ...subs.map((s) => ROUTE_PATH_SEP + s.path!),
-  );
+  subRoutesPathAppendToParent.push(...subs.map((s) => ROUTE_PATH_SEP + s.path!));
 
   Object.assign(parent, {
     path: ROUTE_PATH_SEP + parent.path!,
@@ -231,12 +212,7 @@ export const arrangeRoutes = (
     handle: handle?.element,
     ErrorBoundary: errorBoundary?.element,
     children: subs.map((sub) =>
-      arrangeRoutes(
-        isolateRoutes,
-        sub,
-        subRoutesPathAppendToParent,
-        sideEffectRoutes,
-      ),
+      arrangeRoutes(isolateRoutes, sub, subRoutesPathAppendToParent, sideEffectRoutes),
     ),
   });
 
@@ -289,9 +265,7 @@ const getOrCreateImport = (
   const index = tracker.size;
   const identifier = `${prefix}${index}`;
   tracker.set(path, identifier);
-  imports.push(
-    `import ${identifier} from "${fileProtocol(path)}";`,
-  );
+  imports.push(`import ${identifier} from "${fileProtocol(path)}";`);
   return identifier;
 };
 
@@ -309,72 +283,44 @@ export const stringifyRoutes = (
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { loader, handle, ErrorBoundary, action, element } = route;
 
-      // Get or create unique import identifiers
-      const loaderRef = loader
-        ? getOrCreateImport(
-            importTracker.loader,
-            loader as string,
-            "loader",
-            imports,
-          )
-        : null;
+      // Get or create unique import identifiers using type guards
+      const loaderRef =
+        loader && isStringExport(loader)
+          ? getOrCreateImport(importTracker.loader, loader, "loader", imports)
+          : null;
 
-      const handleRef = handle
-        ? getOrCreateImport(
-            importTracker.handle,
-            handle as string,
-            "handle",
-            imports,
-          )
-        : null;
+      const handleRef =
+        handle && isStringExport(handle)
+          ? getOrCreateImport(importTracker.handle, handle, "handle", imports)
+          : null;
 
-      const actionRef = action
-        ? getOrCreateImport(
-            importTracker.action,
-            action as string,
-            "action",
-            imports,
-          )
-        : null;
+      const actionRef =
+        action && isStringExport(action)
+          ? getOrCreateImport(importTracker.action, action, "action", imports)
+          : null;
 
-      const errorBoundaryRef = ErrorBoundary
-        ? getOrCreateImport(
-            importTracker.errorBoundary,
-            ErrorBoundary as string,
-            "ErrorBoundary",
-            imports,
-          )
-        : null;
+      const errorBoundaryRef =
+        ErrorBoundary && isStringExport(ErrorBoundary)
+          ? getOrCreateImport(importTracker.errorBoundary, ErrorBoundary, "ErrorBoundary", imports)
+          : null;
 
       // Generate element import for non-lazy mode
       const elementIndex = imports.length;
       if (!lazy) {
-        imports.push(
-          `import element${elementIndex} from "${fileProtocol(element as string)}";`,
-        );
+        imports.push(`import element${elementIndex} from "${fileProtocol(element as string)}";`);
       }
 
       // Build lazy route return object conditionally
       const lazyLoaderProp = loaderRef ? `loader: ${loaderRef},` : "";
       const lazyActionProp = actionRef ? `action: ${actionRef},` : "";
       const lazyHandleProp = handleRef ? `handle: ${handleRef},` : "";
-      const lazyErrorBoundaryProp = errorBoundaryRef
-        ? `ErrorBoundary: ${errorBoundaryRef},`
-        : "";
+      const lazyErrorBoundaryProp = errorBoundaryRef ? `ErrorBoundary: ${errorBoundaryRef},` : "";
 
       // Build non-lazy route properties conditionally
-      const staticLoaderProp = loaderRef
-        ? `loader: ${loaderRef},`
-        : "";
-      const staticActionProp = actionRef
-        ? `action: ${actionRef},`
-        : "";
-      const staticHandleProp = handleRef
-        ? `handle: ${handleRef},`
-        : "";
-      const staticErrorBoundaryProp = errorBoundaryRef
-        ? `ErrorBoundary: ${errorBoundaryRef},`
-        : "";
+      const staticLoaderProp = loaderRef ? `loader: ${loaderRef},` : "";
+      const staticActionProp = actionRef ? `action: ${actionRef},` : "";
+      const staticHandleProp = handleRef ? `handle: ${handleRef},` : "";
+      const staticErrorBoundaryProp = errorBoundaryRef ? `ErrorBoundary: ${errorBoundaryRef},` : "";
 
       if (lazy) {
         return `{
@@ -409,8 +355,7 @@ export const stringifyRoutes = (
   return `[${code}]`;
 };
 
-export const deepCopy = <T = unknown>(data: T): T =>
-  JSON.parse(JSON.stringify(data)) as T;
+export const deepCopy = <T = unknown>(data: T): T => JSON.parse(JSON.stringify(data)) as T;
 
 /**
  * Strp slash before and after.
@@ -424,10 +369,7 @@ export const stripSlash = (filepath: string) => {
  */
 export const filePathToRoutePath = (filepath: string) => {
   const extname = nodepath.extname(filepath);
-  filepath =
-    filepath
-      .replace(extname, "")
-      .replaceAll(SPECIAL_PATH_SPLIT, FILE_PATH_SEP) + extname;
+  filepath = filepath.replace(extname, "").replaceAll(SPECIAL_PATH_SPLIT, FILE_PATH_SEP) + extname;
 
   const path_ = filepath.endsWith(PLUGIN_MAIN_PAGE_FILE)
     ? stripSlash(filepath.replace(PLUGIN_MAIN_PAGE_FILE, ""))
@@ -441,8 +383,7 @@ export const filePathToRoutePath = (filepath: string) => {
       }
 
       if (seg.startsWith(OPTIONAL_ROUTE_FLAG)) {
-        const [, p] =
-          new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
+        const [, p] = new RegExp(`^\\${OPTIONAL_ROUTE_FLAG}(.+)`).exec(seg) ?? [];
         return p ? `:${p}?` : seg;
       }
 
@@ -458,9 +399,7 @@ export const isSubPath = (parentPath: string, subPath: string) => {
   if (
     parentPath !== "" &&
     subPath.startsWith(parentPath) &&
-    subPath.split(ROUTE_PATH_SEP).length -
-      parentPath.split(ROUTE_PATH_SEP).length ===
-      1
+    subPath.split(ROUTE_PATH_SEP).length - parentPath.split(ROUTE_PATH_SEP).length === 1
   ) {
     return true;
   }

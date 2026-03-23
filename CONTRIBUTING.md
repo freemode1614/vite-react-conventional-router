@@ -100,6 +100,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore:` - Build/config changes
 
 Example:
+
 ```
 feat: add support for route groups
 
@@ -122,6 +123,58 @@ When reporting issues, please include:
 ## Code of Conduct
 
 Be respectful and constructive in all interactions.
+
+## 文档贡献 (Documentation Contributions)
+
+### 文档结构
+
+项目文档位于以下位置：
+
+- `README.md` - 项目概述和快速开始
+- `README_EN.md` - English documentation
+- `CONTRIBUTING.md` - 贡献指南
+- `TODO.md` - TODO 列表和计划
+- `CHANGELOG.md` - 版本更新日志
+- `docs/` - 详细文档目录
+  - `api-reference.md` - API 参考
+  - `migration-guide.md` - 迁移指南
+  - `faq.md` - 常见问题
+  - `best-practices.md` - 最佳实践
+  - `architecture.md` - 架构设计
+
+### 文档编写规范
+
+1. **使用清晰的标题层级**
+
+   - 使用 `##` 作为主章节
+   - 使用 `###` 作为子章节
+   - 避免超过 4 级标题
+
+2. **代码示例规范**
+
+   - 所有代码示例必须可运行
+   - 使用 TypeScript 语法高亮
+   - 包含必要的上下文
+
+3. **链接规范**
+
+   - 内部链接使用相对路径
+   - 外部链接使用完整 URL
+   - 避免链接到不稳定的资源
+
+4. **语言风格**
+   - 使用简洁的中文
+   - 技术术语保持英文
+   - 避免口语化表达
+
+### 测试文档
+
+在提交文档更改前，请确保：
+
+- [ ] 所有代码示例可运行
+- [ ] 所有链接有效
+- [ ] 格式正确 (markdown lint)
+- [ ] 无拼写错误
 
 ## Questions?
 

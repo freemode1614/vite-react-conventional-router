@@ -1,0 +1,17 @@
+> @moccona/vite-plugin-react-conventional-router@0.2.8 test /Users/wenpeng.lei/Developers/vite-react-conventional-router
+> vitest --watch=false
+
+
+ RUN  v3.2.3 /Users/wenpeng.lei/Developers/vite-react-conventional-router
+
+stdout | __tests__/index.spec.ts > createConventionalRouter > resolveId() > should return virtual module name for virtual:routes import
+INFO vite-plugin-conventional-router Read virtual routes
+
+ ✓ __tests__/index.spec.ts (5 tests) 16ms
+ ✓ __tests__/validation.spec.ts (6 tests) 7ms
+ ✓ __tests__/type-guards.spec.ts (15 tests) 4ms
+
+ Test Files  3 passed (3)
+      Tests  26 passed (26)
+   Start at  11:22:36
+   Duration  2.12s (transform 269ms, setup 0ms, collect 622ms, tests 28ms, environment 0ms, prepare 399ms)

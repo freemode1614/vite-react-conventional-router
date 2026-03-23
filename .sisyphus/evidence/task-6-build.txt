@@ -1,0 +1,16 @@
+> @moccona/vite-plugin-react-conventional-router@0.2.8 build /Users/wenpeng.lei/Developers/vite-react-conventional-router
+> cross-env NODE_ENV=production tsup
+
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.0
+CLI Using tsup config: /Users/wenpeng.lei/Developers/vite-react-conventional-router/tsup.config.ts
+CLI Target: esnext
+CLI Cleaning output folder
+ESM Build start
+ESM npm/index.js     17.98 KB
+ESM npm/index.js.map 47.91 KB
+ESM ⚡️ Build success in 353ms
+DTS Build start
+DTS ⚡️ Build success in 3444ms
+DTS npm/index.d.ts 365.00 B

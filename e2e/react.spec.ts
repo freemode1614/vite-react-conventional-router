@@ -242,19 +242,19 @@ test.describe("React Conventional Router E2E Tests", () => {
     test("should navigate between nested routes", async () => {
       // Test navigation from /page2 to /page2/page2-1 to /page2/page2-1/page2-1-1
       await page.goto(`http://localhost:${port}/page2`);
-      
+
       // Navigate to page2-1
       await page.getByRole("button", { name: "page2-1" }).click();
       await expect(page).toHaveURL(`http://localhost:${port}/page2/page2-1`);
       let content = getPageContent(page);
       await expect(content.getByText("page2/page2-1/index.tsx")).toBeVisible();
-      
+
       // Navigate to page2-1-1
       await page.getByRole("button", { name: "page2-1-1" }).click();
       await expect(page).toHaveURL(`http://localhost:${port}/page2/page2-1/page2-1-1`);
       content = getPageContent(page);
       await expect(content.getByText("page2/page2-1/page2-1-1/index.tsx")).toBeVisible();
-      
+
       // Navigate back to home
       await page.getByRole("button", { name: "/" }).first().click();
       await expect(page).toHaveURL(`http://localhost:${port}/`);
